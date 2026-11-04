@@ -361,4 +361,4 @@ export function Assistant({ onTools }: { onTools: () => void }) {
         <button className="as-link as-tools" onClick={onTools}>Tools and example clips</button>
         </div>
     </div>;
-                                                                                       }
+}
