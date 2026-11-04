@@ -8,6 +8,7 @@ import './v3.css';
 import './v4.css';
 import './assistant.css';
 import { Assistant } from './Assistant';
+import { Projects } from './Projects';
 import { BackendPanel } from './BackendPanel';
 
 import addMp4 from './clips/Add_step.mp4';
@@ -125,7 +126,7 @@ export function App() {
 
     const header = <header id="topbar">
         <div className="brand"><span className="mark-m"><img className="brand-mark" src={MARK_SRC} width={26} height={26} alt="" /></span>LabSpotter<span className="kicker">{view === 'clips' ? 'Clips' : view === 'run' ? 'Tools' : 'Review'}</span></div>
-        <div className="top-right"><span className="run-chip" style={view === 'assistant' ? { display: 'none' } : undefined}>{liveRun ? (liveRun.kind === 'stored' ? 'Stored run - ' : 'Uploaded clip - ') + liveRun.tag + (liveRun.device ? ' - ' + liveRun.device : '') + ' - agent not called - model-predicted, unvalidated' : (view === 'run' ? 'No clip added yet. Predictions you add are suggestions, not confirmed.' : 'Example clips - imported predictions, origin unverified, unvalidated')}</span></div>
+        <div className="top-right"><span className="run-chip" style={view === 'assistant' || view === 'projects' ? { display: 'none' } : undefined}>{liveRun ? (liveRun.kind === 'stored' ? 'Stored run - ' : 'Uploaded clip - ') + liveRun.tag + (liveRun.device ? ' - ' + liveRun.device : '') + ' - agent not called - model-predicted, unvalidated' : (view === 'run' ? 'No clip added yet. Predictions you add are suggestions, not confirmed.' : 'Example clips - imported predictions, origin unverified, unvalidated')}</span></div>
     </header>;
 
     const clipIndex = <div className="index">{clips.map((x: any, i: number) =>
@@ -229,14 +230,14 @@ export function App() {
             </div>
         </div>
         <div className="rev-note">Model-predicted, not verified. Video playback is only in this tab. The clip was uploaded to the analysis server for analysis: the server deletes the video file afterwards but keeps the result files and one still frame from the clip under this run tag until the host owner removes them. Marks are local and are not review decisions.</div>
-    </div> : <div className="rev-live-empty">No run yet this session. Analyze a clip on the Tools tab and it will show up here for review.</div>;
+    </div> : <div className="rev-live-empty">These are imported demo clips. Add your own video in Assistant or Tools to review a real analysis.</div>;
 
     const nMarked = clips.filter((x: any) => marks[x.id]).length;
     const nFlagged = clips.filter((x: any) => marks[x.id] === 'flagged').length;
     const shown = clips.filter((x: any) => revFilter === 'all' || (revFilter === 'open' ? !marks[x.id] : marks[x.id] === 'flagged'));
     const nextOpen = () => { const x = clips.find((y: any) => !marks[y.id]); if (!x) return; setRevFilter('all'); setTimeout(() => { const el = document.querySelector('[data-rev-id="' + x.id + '"]') as HTMLElement | null; if (el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); (el.querySelector('button') as HTMLElement | null)?.focus({ preventScroll: true }); } }, 0); };
     const reviewView = <div className="view rev-wrap">
-        <div className="view-head"><h1>Review queue</h1><p className="view-lede">Look over each suggestion and mark it. Marks stay on this device.</p></div>
+        <div className="view-head"><h1>Review queue</h1><p className="view-lede">Look over each suggestion and mark it. Seen means you looked. Flag means check it again. Marks stay in this tab and reset on reload.</p></div>
         <section className="rev-summary">
         <div className="ledger" data-testid="ledger"><span className="ledger-num">{String(nMarked).padStart(2, '0')} / {String(clips.length).padStart(2, '0')}</span><span className="ledger-cap">demo clips marked locally (seen or flagged) - not review decisions</span></div>
         <div className="rev-meter" aria-hidden="true"><i style={{ width: (nMarked / clips.length * 100) + '%' }}></i></div>
@@ -301,17 +302,17 @@ export function App() {
         <div className="attrib">{D.run.attribution}</div>
     </div>;
 
-    const views: Record<string, React.ReactNode> = { assistant: <Assistant onTools={() => setView('run')} />, clips: clipsView, review: reviewView, run: runView };
+    const views: Record<string, React.ReactNode> = { projects: <Projects />, assistant: <Assistant onTools={() => setView('run')} />, clips: clipsView, review: reviewView, run: runView };
     const tab = (v: string, label: string, badge?: string) =>
         <button key={v} className={'tab' + (view === v ? ' active' : '')} onClick={() => setView(v)}>{label}{badge && <em className="badge-dot" title="8 clips queued, covered by 1 run-level alert">{badge}</em>}</button>;
 
     const railItem = (v: string, label: string) => <button key={v} className={'rail-item' + (view === v ? ' active' : '')} onClick={() => setView(v)} aria-label={label} aria-current={view === v ? 'page' : undefined}><span className="lbl">{label}</span><span className="tick"></span></button>;
     return <div id="app" className="is-assistant">
-        <aside id="rail"><span className="mark"><img className="brand-mark" src={MARK_SRC} width={34} height={34} alt="" /></span><nav>{railItem('assistant', 'Assistant')}{railItem('clips', 'Clips')}{railItem('run', 'Tools')}{railItem('review', 'Review')}</nav><div className="unval"><i></i><b>UNVAL</b></div></aside>
+        <aside id="rail"><span className="mark"><img className="brand-mark" src={MARK_SRC} width={34} height={34} alt="" /></span><nav>{railItem('assistant', 'Assistant')}{railItem('clips', 'Clips')}{railItem('run', 'Tools')}{railItem('review', 'Review')}{railItem('projects', 'Projects')}</nav><div className="unval"><i></i><b>Unconfirmed</b></div></aside>
         <div id="main">
             {header}
             <main id="view">{views[view]}</main>
         </div>
-        <nav id="tabbar">{tab('assistant', 'Assistant')}{tab('clips', 'Clips')}{tab('run', 'Tools')}{tab('review', 'Review', liveRun ? '8 demo + 1 run' : '8 demo clips')}<span className="unval-m"><i></i>UNVAL</span></nav>
+        <nav id="tabbar">{tab('assistant', 'Assistant')}{tab('clips', 'Clips')}{tab('run', 'Tools')}{tab('review', 'Review', liveRun ? '8 demo + 1 run' : '8 demo clips')}{tab('projects', 'Projects')}<span className="unval-m"><i></i>Unconfirmed</span></nav>
     </div>;
 }
