@@ -1,0 +1,8 @@
+# PARTIAL pins. Offline tests and smoke need only the first two (tested 2026-11-02: python 3.10, scikit-learn 1.6.1, numpy 2.2.6).
+scikit-learn==1.6.1
+numpy==2.2.6
+# Encoder path only. These are minimums, NOT pins: tested versions were not recorded (a 2026-11-01 CPU notebook probe printed torch 2.11.0+cpu).
+torch>=2.2
+transformers>=4.50
+pillow
+# ffmpeg must be on PATH

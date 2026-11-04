@@ -1,0 +1,8 @@
+# Development results, all-train head (2026-10-31 00:1x ET). 75% NOT met. Not blind.
+Data: 1427 official-training clips (384 earlier + 1043 new) from 97 unique sources (the two subsets share most sources; folds keep a source's clips together). Features: V-JEPA2 h (1024) + SSv2 logits (174), identical extraction for all clips. Dev holdout: the 229 official-validation clips (5 sources), already used once for the frozen384 result, so spent: development only.
+Source-grouped 5-fold CV on the 1427 (2 seeds, pooled out-of-fold balanced accuracy; optimistic): LR C=0.03 0.7146, C=0.1 0.7092, C=0.3 0.6967, RBF-SVC C=3 0.7002, C=10 0.6932.
+Fit on all 1427, scored once on the 229 holdout: LR C=0.03 balanced 0.5281 (top-1 0.4716); C=0.1 0.5258; C=0.3 0.5265; RBF-SVC C=3 0.4509; C=10 0.4679. C=0.03 chosen by train-CV, not by the holdout.
+Per-class recall, LR C=0.03: Add 0.29, Analytical 1.00, CollectLayer 0.40, MeasureLiquid 0.44, MeasureSolid 0.85, No action 0.46, PhaseSeparation 0.43, Stir 0.36.
+Temporal features (8-slot means): hurt in source-grouped CV on the 1043 new clips (h+lg 0.6913; +diff 0.659; +diff+trend 0.648; +slots 0.637). Not used.
+Compared with frozen384 on the same 229 clips: 0.512 -> 0.528. Candidate head: heads/candidate_c003_1427.json (sha256 ddf47d5f...). Baseline frozen384 stays the default.
+Runtime test (Tesla T4 kernel): chain/action_clip.py ran the real V-JEPA2 encoder on 3 mp4 files (demo clips: 360p transcodes, may overlap earlier training/test material; new invocation inputs, not unseen data) with both heads: exit 0, 9 facts, gate all UNVERIFIED, alert pending_review, offline agent. Predictions on these 3 clips: baseline 1/3 top-1, candidate 1/3. This is a runtime proof, not an accuracy estimate.

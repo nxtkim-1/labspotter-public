@@ -1,0 +1,89 @@
+THIRD-PARTY NOTICES
+
+LabSpotter is licensed under the MIT License (see LICENSE). It uses the
+third-party components and services below. This file covers what this branch
+of the repository depends on. The web app, the V-JEPA 2 model, the IBM clips and
+the tracking pipeline are covered in app/docs/THIRD-PARTY-NOTICES-additions.txt
+(React, the fonts, the clips, the models and the tools it names). Keep that file
+with this one.
+
+Licence texts in this file were checked on October 29, 2026. The sections in app/docs/THIRD-PARTY-NOTICES-additions.txt were rechecked on November 3, 2026.
+
+===============================================================================
+1. Meta Model API (terms of use, not a licence)
+===============================================================================
+
+The engine calls Meta's models through the Meta Model API: Muse Spark 1.3
+(muse-spark-1.3), SAM 3.1 (sam-3.1), Muse Voice Transcribe 1.0
+(muse-voice-transcribe-1.0) and Muse Wonder 1.0 (muse-wonder-1.0). No model
+code or weights are included in this repository. Use of the API is governed
+by Meta's terms of use:
+
+  Meta Model API Terms of Service
+  https://dev.meta.ai/legal/terms-of-service
+
+  Meta Model API Acceptable Use Policy
+  https://dev.meta.ai/legal/acceptable-use-policy
+
+===============================================================================
+2. Python and its standard library
+===============================================================================
+
+The engine and server use only the Python standard library at runtime.
+Python is not included in this repository.
+
+  Licence: Python Software Foundation License Version 2
+  Copyright (c) 2001 Python Software Foundation; All Rights Reserved
+  https://docs.python.org/3/license.html
+
+===============================================================================
+3. SQLite
+===============================================================================
+
+Used through Python's sqlite3 module. Not included in this repository.
+
+  Licence: public domain. No notice is required.
+  https://www.sqlite.org/copyright.html
+
+===============================================================================
+4. FFmpeg
+===============================================================================
+
+The engine runs the ffmpeg and ffprobe programs as separate processes to
+extract audio and frames. FFmpeg is not included in this repository.
+
+  Licence: GNU Lesser General Public License version 2.1 or later, or the
+  GNU General Public License version 2 or later for builds that include
+  GPL parts.
+  https://ffmpeg.org/legal.html
+
+===============================================================================
+5. pytest (tests only)
+===============================================================================
+
+Listed in requirements-dev.txt. Not included in this repository.
+
+  Licence: MIT License
+  https://github.com/pytest-dev/pytest/blob/main/LICENSE
+
+The MIT License (MIT)
+
+Copyright (c) 2004 Holger Krekel and others
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
