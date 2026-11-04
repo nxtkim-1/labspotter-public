@@ -2,7 +2,7 @@
 
 A calm second pair of eyes for the bench. LabSpotter helps you keep your place in a lab procedure: it follows a written guide, suggests what a short video clip shows, and saves your own notes and confirmations so you can pause and pick up where you left off.
 
-Built for the Meta Global AI Developer Hackathon. Powered by BenchFreeze, the save-and-continue layer.
+Built for the Meta Global AI Developer Hackathon. Powered by Meta: V-JEPA 2 video features, optional Meta speech transcription, and optional Meta session recaps. Session persistence is implemented by this app, not a Meta storage service.
 
 ## The problem
 Lab work is made of small steps that are easy to lose when you are interrupted. Paper notes and memory do not say which step you had confirmed or what you were doing when you stopped.
@@ -10,13 +10,16 @@ Lab work is made of small steps that are easy to lose when you are interrupted. 
 ## What it does
 - **Guide.** A written, step-by-step guide. A step is marked done only when you tap it yourself. The app never marks a step for you.
 - **Clip suggestion.** Add a short clip. A frozen V-JEPA 2 video encoder produces features, and a small classifier we trained on public lab-action clips suggests which lab action it sees. It is a suggestion, shown as not confirmed.
-- **Pause and continue (BenchFreeze).** Pause saves your notes and your own confirmations. Continue shows them back to you. Saved entries cannot tell you the bench's current state; check it in person.
+- **Pause and continue.** Pause saves your notes and your own confirmations. Continue shows them back to you. Saved entries cannot tell you the bench's current state; check it in person.
 - **Optional recap.** A separate Meta model recap (Meta/Spark) can write a short summary of a saved session. It is off unless the server's operator turns it on with a Meta key.
 - **Accounts (hosted mode).** Sign up, sign in, change password, delete your account and data. Each account only sees its own sessions and runs.
 
+- **Observation log.** Typed and Meta-transcribed notes are saved with server save times and their source. Download the session record as JSON. Save time is not verified event time.
+- **Across browsers.** Sign into the same account on the same hosted site to restore server-saved sessions. Theme and Review demo marks stay in the browser. Phone and desktop are responsive web views, not native apps.
+
 ## Privacy
 - Video analysis runs on the machine that runs the server: your own computer when you run it locally, or the host's server when you use a hosted copy (so clips you add to a hosted site are processed there). The clip is not sent to Meta for the suggestion.
-- Meta features are off unless the server's operator turns them on with a Meta key. If they are on, selected clips and/or saved entries may be sent to Meta. The operator controls this, not individual users. In hosted mode (`LABSPOTTER_HOSTED=1`) the voice and agent routes are disabled and answer 403.
+- Meta features are off unless the server's operator turns them on with a Meta key. If they are on, selected clips and/or saved entries may be sent to Meta. The operator controls this, not individual users. In hosted mode (`LABSPOTTER_HOSTED=1`) agent routes are disabled. Voice can be separately enabled by an operator only for invite-only accounts, with a server-side key, per-account and global lifetime limits, and a first-recording notice.
 - Suggestions are not a safety check.
 
 ## Status
