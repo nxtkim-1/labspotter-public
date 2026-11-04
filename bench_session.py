@@ -191,3 +191,36 @@ def continue_session(runs, sid):
             cp = cps[-1]
         finally: s.close()
     return {"session_id": sid, "checkpoint": _summary(cp), "record_intact": True, "via": "owner session (no key)", **LABELS}
+
+# Owner-scoped organizational metadata, separate from immutable evidence records.
+def _organize(s):
+    s.db.execute('CREATE TABLE IF NOT EXISTS session_labels (sid TEXT PRIMARY KEY, name TEXT NOT NULL, project TEXT NOT NULL DEFAULT "")')
+    s.db.execute('CREATE TABLE IF NOT EXISTS projects (id TEXT PRIMARY KEY, name TEXT NOT NULL, created REAL NOT NULL)')
+    s.db.commit()
+
+def organization(runs, body=None):
+    with _L:
+        s = _store(runs)
+        try:
+            _organize(s)
+            if body is not None:
+                action = body.get('action')
+                if action == 'create_project':
+                    name = ' '.join(str(body.get('name', '')).split())[:80]
+                    if not name: raise BenchError(400, 'Project name is required')
+                    if s.db.execute('SELECT count(*) FROM projects').fetchone()[0] >= 100: raise BenchError(400, 'Project limit reached')
+                    s.db.execute('INSERT INTO projects VALUES (?,?,?)', (secrets.token_hex(6), name, time.time()))
+                elif action == 'label_session':
+                    sid = str(body.get('session_id', ''))
+                    if not SID_RE.fullmatch(sid): raise BenchError(400, 'Invalid session')
+                    try: s.load_run(sid)
+                    except KeyError: raise BenchError(404, 'Unknown session')
+                    name = ' '.join(str(body.get('name', '')).split())[:80]
+                    project = str(body.get('project', ''))
+                    if not name: raise BenchError(400, 'Session name is required')
+                    if project and not s.db.execute('SELECT id FROM projects WHERE id=?', (project,)).fetchone(): raise BenchError(400, 'Unknown project')
+                    s.db.execute('INSERT OR REPLACE INTO session_labels VALUES (?,?,?)', (sid, name, project))
+                else: raise BenchError(400, 'Unknown organization action')
+                s.db.commit()
+            return {'projects': [{'id': r[0], 'name': r[1], 'created': r[2]} for r in s.db.execute('SELECT id,name,created FROM projects ORDER BY created DESC')], 'labels': {r[0]: {'name': r[1], 'project': r[2]} for r in s.db.execute('SELECT sid,name,project FROM session_labels')}}
+        finally: s.close()
