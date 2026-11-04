@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { apiEndpoint, getHealth, Health, analyzeClip, benchCreate, benchClaim, benchLabel, benchNote, benchFreeze, benchContinue, benchInfo, benchList, BenchSessionRow, BenchCp, agentCoach, agentGlimpse, setSessionToken, needsManualToken } from './backend';
+import { apiEndpoint, getHealth, Health, analyzeClip, benchCreate, benchClaim, benchLabel, benchNote, benchFreeze, benchContinue, benchInfo, benchList, BenchSessionRow, BenchCp, agentCoach, agentGlimpse, setSessionToken, needsManualToken, getOrganization } from './backend';
 import { SpeakNote } from './VoiceControl';
 import { predictionRows, classLabel } from './probs';
 import { openCamera, createSegmentRecorder, speakRecap, stopStream, SegmentRecorder, Segment } from './liveCapture';
@@ -83,6 +83,8 @@ export function Assistant({ onTools }: { onTools: () => void }) {
     const [paused, setPaused] = useState(false);
     const [restored, setRestored] = useState(false);
     const [recap, setRecap] = useState('');
+    const [openQuestions, setOpenQuestions] = useState<string[]>([]);
+    const [serverNames, setServerNames] = useState<Record<string, string>>({});
     const [recapFrom, setRecapFrom] = useState<'meta' | 'local' | ''>('');
     const [guide, setGuide] = useState<Guide | null>(null);
     const [gDone, setGDone] = useState<number[]>([]);
@@ -114,7 +116,7 @@ export function Assistant({ onTools }: { onTools: () => void }) {
     const depsErr = health && health.deps && (health.deps as any).error ? String((health.deps as any).error) : '';
     const ready = !!health && !!health.head && !depsErr;
     const authed = !!health && !!health.head;
-    const loadRecent = () => { if (!authed) return; benchList(ep).then(r => setRecent(r.sessions.filter(s => s.intact && (s.entries || 0) > 0))).catch(() => setRecent([])); };
+    const loadRecent = () => { if (!authed) return; getOrganization(ep).then(o => setServerNames(Object.fromEntries(Object.entries(o.labels).map(([id, v]) => [id, v.name])))).catch(() => {}); benchList(ep).then(r => setRecent(r.sessions.filter(s => s.intact && (s.entries || 0) > 0))).catch(() => setRecent([])); };
     useEffect(loadRecent, [authed, sid, paused]); // eslint-disable-line
     const connect = () => { if (!tok.trim()) return; setSessionToken(tok.trim(), ep); setTok(''); refresh(); };
     const run = async (label: string, f: () => Promise<void>) => { setBusy(label); setErr(''); try { await f(); } catch (e: any) { setErr(String(e && e.message ? e.message : e)); } setBusy(''); };
@@ -153,8 +155,8 @@ export function Assistant({ onTools }: { onTools: () => void }) {
             await benchFreeze(ep, sid, 'paused ' + new Date().toISOString().slice(0, 16));
             const lines = await refreshLog(sid).then(describe);
             setRestored(false); setPaused(true); setTimeout(() => { try { window.scrollTo(0, 0); } catch { /* ignore */ } }, 50);
-            let text = '', from: 'meta' | 'local' = 'local';
-            try { const r = await agentCoach(ep, sid); text = joinSentences([r.recap, ...(r.next_steps || [])]); from = 'meta'; } catch { text = localRecap(lines); }
+            setOpenQuestions([]); let text = '', from: 'meta' | 'local' = 'local';
+            try { const r = await agentCoach(ep, sid); text = joinSentences([r.recap, ...(r.next_steps || [])]); setOpenQuestions(r.open_questions || []); from = 'meta'; } catch { text = localRecap(lines); }
             setRecap(text || localRecap(lines)); setRecapFrom(text ? from : 'local');
         });
     };
@@ -165,8 +167,8 @@ export function Assistant({ onTools }: { onTools: () => void }) {
     const tickStep = (i: number) => run('Saving', async () => { const s = await ensureSid(); await benchNote(ep, s, 'learner_confirmed', 'Step ' + (i + 1) + ': ' + (guide as Guide).steps[i]); setGDone(d => d.indexOf(i) >= 0 ? d : [...d, i]); await refreshLog(s); });
     const resume = (s: string) => run('Opening your session', async () => {
         await benchContinue(ep, s); setSid(s); freeUrls(); setItems([]); setCur(-1); setPaused(false);
-        const cps0 = await refreshLog(s); const rg = restoreGuide(cps0); setGuide(rg.guide); setGDone(rg.done); const lines = describe(cps0); setRecap(localRecap(lines)); setRecapFrom('local'); setRestored(true); setPaused(true); setTimeout(() => { try { window.scrollTo(0, 0); } catch { /* ignore */ } }, 50);
-        try { const r = await agentCoach(ep, s); const t = joinSentences([r.recap, ...(r.next_steps || [])]); if (t) { setRecap(t); setRecapFrom('meta'); } } catch { /* Meta recap is optional */ }
+        const cps0 = await refreshLog(s); const rg = restoreGuide(cps0); setGuide(rg.guide); setGDone(rg.done); const lines = describe(cps0); setRecap(localRecap(lines)); setRecapFrom('local'); setOpenQuestions([]); setRestored(true); setPaused(true); setTimeout(() => { try { window.scrollTo(0, 0); } catch { /* ignore */ } }, 50);
+        try { const r = await agentCoach(ep, s); const t = joinSentences([r.recap, ...(r.next_steps || [])]); if (t) { setRecap(t); setOpenQuestions(r.open_questions || []); setRecapFrom('meta'); } } catch { /* Meta recap is optional */ }
     });
     const cont = () => { setPaused(false); };
     const fresh = () => { freeUrls(); setGuide(null); setGDone([]); setSid(''); setItems([]); setCur(-1); setLog([]); setSavedEntries([]); setPaused(false); setRecap(''); setErr(''); };
@@ -267,8 +269,8 @@ export function Assistant({ onTools }: { onTools: () => void }) {
             {unread && !hasHeld && <p className="as-quiet">The last few seconds before you paused were not read. Go live again to cover them.</p>}
             <div className={'as-ai' + (recapFrom === 'meta' ? ' meta' : ' plain')}>
                 <p className="as-ai-kicker">{recapFrom === 'meta' ? 'AI summary' : 'Summary of your saved entries'}</p>
-                {(() => { const t = recap.replace(/\s*\((?:p|score|probability)\s*[=:]\s*[0-9.]+\)/gi, '').replace(/\b(?:p|score)\s*=\s*[0-9.]+/gi, ''); const parts = t.match(/[^.!?]+[.!?]+(\s|$)/g) || [t]; if (true) return <ul className="as-recap-list">{parts.map((x, k) => <li key={k}>{x.trim()}</li>)}</ul>; const cut = t.length > 320 ? 2 : parts.length; const head = parts.slice(0, cut).join('').trim(); const rest = parts.slice(cut).join('').trim(); return <><p className="as-recap">{head}</p>{rest && <details className="as-more"><summary>More</summary><p className="as-recap">{rest}</p></details>}</>; })()}
-                {recapFrom === 'meta' && <p className="as-powered">Powered by Meta</p>}
+                {(() => { const t = recap.replace(/\s*\((?:p|score|probability)\s*[=:]\s*[0-9.]+\)/gi, '').replace(/\b(?:p|score)\s*=\s*[0-9.]+/gi, ''); const parts = recapFrom === 'local' ? log.filter(x => x !== 'Protocol loaded') : (t.match(/[^.!?]+[.!?]+(\s|$)/g) || [t]); if (true) return <ul className="as-recap-list">{parts.map((x, k) => <li key={k}>{x.trim()}</li>)}</ul>; const cut = t.length > 320 ? 2 : parts.length; const head = parts.slice(0, cut).join('').trim(); const rest = parts.slice(cut).join('').trim(); return <><p className="as-recap">{head}</p>{rest && <details className="as-more"><summary>More</summary><p className="as-recap">{rest}</p></details>}</>; })()}
+                {recapFrom === 'meta' && <><p className="as-powered">Powered by Meta. Suggestions from saved entries, not checked.</p>{openQuestions.length > 0 && <section><h3>Worth checking</h3><ul>{openQuestions.map((q, i) => <li key={i}>{q}</li>)}</ul></section>}</>}
             </div>
             <p className="as-quiet">Saved entries cannot show the bench's current state. Check it in person.</p>
             <div className="as-actions">
@@ -354,8 +356,8 @@ export function Assistant({ onTools }: { onTools: () => void }) {
 
         {!busy && !paused && recent.length > 0 && !(started && !paused && it) && <div className="as-recent"><h2>Recent</h2>
             {recent.slice(0, 6).map(r => <button key={r.session_id} className="as-row" onClick={() => resume(r.session_id)}>
-                <span><b>{readNames()[r.session_id] || 'Saved session'}</b><i title={whenExact((r.last_t || r.created) * 1000)}>{when((r.last_t || r.created) * 1000)}</i></span><em>Continue</em></button>)}</div>}
+                <span><b>{serverNames[r.session_id] || readNames()[r.session_id] || 'Saved session'}</b><i title={whenExact((r.last_t || r.created) * 1000)}>{when((r.last_t || r.created) * 1000)}</i></span><em>Continue</em></button>)}</div>}
         <button className="as-link as-tools" onClick={onTools}>Tools and example clips</button>
         </div>
     </div>;
-            }
+}
