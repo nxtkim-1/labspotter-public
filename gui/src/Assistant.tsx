@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { apiEndpoint, getHealth, Health, analyzeClip, benchCreate, benchClaim, benchLabel, benchNote, benchFreeze, benchContinue, benchInfo, benchList, BenchSessionRow, BenchCp, agentCoach, agentGlimpse, setSessionToken, needsManualToken } from './backend';
+import { SpeakNote } from './VoiceControl';
 import { predictionRows, classLabel } from './probs';
 import { openCamera, createSegmentRecorder, speakRecap, stopStream, SegmentRecorder, Segment } from './liveCapture';
 
@@ -45,6 +46,7 @@ function describe(cps: BenchCp[]): string[] {
         if (k === 'clip_run') { const m = /claim: ([^ ]+)/.exec(t); return 'App suggestion: ' + (m ? classLabel(m[1]) : 'a video action') + ' (not confirmed)'; }
         if (k === 'user_label_agreed') return 'You agreed with the suggestion';
         if (k === 'user_label_corrected') { const m = /user label (\S+)/.exec(t); return 'You changed it to ' + (m ? classLabel(m[1]) : 'another action'); }
+        if (k === 'user_spoken_observation') return 'Your spoken note (Meta transcript, saved by you): ' + afterColon(t);
         if (k === 'user_observation') return 'Your note: ' + afterColon(t);
         if (k === 'user_question') return 'Your question: ' + afterColon(t);
         if (k === 'user_learner_confirmed') { const m = /Step (\d+): (.*)$/.exec(t); return m ? 'You marked step ' + m[1] + ' done: ' + m[2].replace(/[.!?\s]+$/, '') : 'You marked a protocol step done'; }
@@ -74,6 +76,7 @@ export function Assistant({ onTools }: { onTools: () => void }) {
     const [err, setErr] = useState('');
     const [changing, setChanging] = useState(false);
     const [note, setNote] = useState('');
+    const [spokenNote, setSpokenNote] = useState(false);
     const [log, setLog] = useState<string[]>([]);
     const [recent, setRecent] = useState<BenchSessionRow[]>([]);
     const [paused, setPaused] = useState(false);
@@ -138,7 +141,7 @@ export function Assistant({ onTools }: { onTools: () => void }) {
             await refreshLog(sid);
         });
     };
-    const addNote = () => { const t = note.trim(); if (!t || !sid) return; run('Saving', async () => { await benchNote(ep, sid, 'observation', t); setNote(''); await refreshLog(sid); }); };
+    const addNote = () => { const t = note.trim(); if (!t || !sid) return; run('Saving', async () => { await benchNote(ep, sid, spokenNote ? 'spoken_observation' : 'observation', t); setNote(''); setSpokenNote(false); await refreshLog(sid); }); };
     const [unread, setUnread] = useState(false);
     const [speakMsg, setSpeakMsg] = useState('');
     const pause = () => {
@@ -290,6 +293,7 @@ export function Assistant({ onTools }: { onTools: () => void }) {
             {it.decided !== '' && <p className="as-done">{it.decided === 'agreed' ? 'You said this is right.' : 'You changed it to ' + classLabel(it.finalLabel) + '.'} Saved.</p>}
             <div className="as-note"><input className="as-input" value={note} maxLength={500} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') addNote(); }} placeholder="Add a note about this" aria-label="Add a note" />
                 <button className="as-btn alt" disabled={!note.trim()} onClick={addNote}>Save note</button></div>
+            <SpeakNote ep={ep} voice={health.voice} onText={t => { setNote(t.slice(0, 500)); setSpokenNote(true); }} />
             <div className="as-actions">
                 <button className="as-btn alt" onClick={() => pick.current && pick.current.click()}>Add another video</button>
                 <button className="as-btn alt" onClick={() => cam.current && cam.current.click()}>Record with camera</button>
@@ -304,6 +308,7 @@ export function Assistant({ onTools }: { onTools: () => void }) {
             <p className="as-quiet">Tap Correct once you have done this step yourself. Only your tap marks a step.</p>
             <div className="as-note"><input className="as-input" value={note} maxLength={500} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') addNote(); }} placeholder="Add a note" aria-label="Add a note" />
                 <button className="as-btn alt" disabled={!note.trim()} onClick={addNote}>Save note</button></div>
+            <SpeakNote ep={ep} voice={health.voice} onText={t => { setNote(t.slice(0, 500)); setSpokenNote(true); }} />
         </div>}
         {started && !busy && !paused && !it && !(guide && nowIdx >= 0 && !live) && <div className="as-card">
             <h2>Session open</h2>{ready ? <p className="as-quiet">Add a video to carry on.</p> : <p className="as-quiet">Video analysis isn't set up on this computer, so follow the written guide and keep notes. Pause any time to save your place.</p>}
@@ -337,6 +342,7 @@ export function Assistant({ onTools }: { onTools: () => void }) {
             {sid && !it && <div className="as-session-actions">
                 {!mainNote && <div className="as-note"><input className="as-input" value={note} maxLength={500} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') addNote(); }} placeholder="Add a note" aria-label="Add a note" />
                     <button className="as-btn alt" disabled={!note.trim()} onClick={addNote}>Save note</button></div>}
+                {!mainNote && <SpeakNote ep={ep} voice={health.voice} onText={t => { setNote(t.slice(0, 500)); setSpokenNote(true); }} />}
                 <div className="as-actions"><button className="as-btn" onClick={pause}>Pause and save my place</button></div></div>}
         </div>}
         {started && !busy && !paused && <button className="as-fab-pause" onClick={pause} aria-label="Pause and save my place">Pause</button>}

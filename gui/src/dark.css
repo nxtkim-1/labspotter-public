@@ -1,0 +1,30 @@
+/* Dark palette. Keep media unchanged, use semantic foregrounds on every card. */
+html[data-theme=dark]{color-scheme:dark!important;background:#0c1220!important;color:#e6edf7!important}
+html[data-theme=dark] body,html[data-theme=dark] #root,html[data-theme=dark] #app{background:#0c1220!important;color:#e6edf7!important}
+html[data-theme=dark] #app,html[data-theme=dark]{--paper:#0c1220;--paper2:#151e2f;--surface:#151e2f;--ink:#e6edf7;--ink2:#c2cee0;--muted:#acbcd3;--faint:#99aac3;--line:#65758f;--hair:#344057;--accent:#82aaff;--blue:#82aaff;--btn:#e6edf7;color-scheme:dark!important}
+html[data-theme=dark] :is(.as-card,.as-stage,.as-guide,.as-row,.acct-card,.acct-strip,.acct-page,.lp-page,.lp-nav,#topbar,#rail,#tabbar,.panel,.index-card,.rev-summary,.rev-item,.rev-list,.tools-card,.bk,.bf,.as-pause,.as-curstep,.rev-live-empty){background:#151e2f!important;color:#e6edf7!important;border-color:#344057!important}
+html[data-theme=dark] :is(h1,h2,h3,b,strong,.brand,.as-curtext,.view-lede,.rev-sub,.rev-mid span,.as-quiet,.bk-note,.vc-hint,.lp-copy,.lp-mission,.acct-card p,label,summary,.as-link,.lp-signin,.clip-name,.label,.meta,.unval,.rev-note){color:#c2cee0!important}
+html[data-theme=dark] :is(h1,h2,h3,b,strong){color:#edf3fc!important}
+html[data-theme=dark] :is(input,textarea,select,.ctl,.rev-fbtn,.as-btn.alt,.bk-load,.as-input){background:#1d2a40!important;color:#e6edf7!important;border-color:#65758f!important}
+html[data-theme=dark] :is(.as-btn:not(.alt),.ctl.primary,.rev-fbtn.on){background:#2563db!important;color:#fff!important;border-color:#4c83ed!important}
+html[data-theme=dark] :is(.tab,.rail-item,.clip-name,.ledger-cap,.index-card button,.acct-strip button){color:#c2cee0!important}
+html[data-theme=dark] :is(.as-log,.as-details,.as-side,.as-note-notice,.tools-more){color:#c2cee0!important;border-color:#344057!important}
+html[data-theme=dark] .rev-filter,html[data-theme=dark] .view{background:#0c1220!important}
+html[data-theme=dark] .rev-meter{background:#344057!important}
+html[data-theme=dark] .as-note-notice{padding:16px;background:#1d2a40;border-radius:12px}
+html[data-theme=dark] :is(#rail nav,.bk-file,.bk-drop,.tools-more,.acct-outer,.acct-bg,.bk-run,.bk-go,.bf-more,.bf-card){background:#151e2f!important;color:#e6edf7!important;border-color:#65758f!important}
+html[data-theme=dark] #rail .rail-item{background:transparent!important;color:#c2cee0!important}
+html[data-theme=dark] #rail .rail-item.active{background:#2a3b58!important;color:#fff!important}
+html[data-theme=dark] :is(button.as-btn.alt,button.bk-load,button.ctl){background:#1d2a40!important;color:#e6edf7!important;border-color:#65758f!important}
+html[data-theme=dark] .acct-page:before{background:#0c1220!important}
+html[data-theme=dark] body:has(.acct-page){background:#0c1220!important}
+html[data-theme=dark] :is(.bk-result,.bf-panel,.bf-proto,.bk-upload,.bk-filebox,.bk-uploadrow,.run-wrap .tools-more,.bk-file,.bk-clip,.bk-pick){background:#151e2f!important;color:#e6edf7!important;border-color:#65758f!important}
+html[data-theme=dark] #app.is-assistant{--paper:#0c1220!important;--paper2:#151e2f!important;--surface:#151e2f!important;--ink:#e6edf7!important;--ink2:#c2cee0!important;--muted:#acbcd3!important;--hair:#344057!important;--accent:#82aaff!important}
+html[data-theme=dark] #app.is-assistant :is(.as-hero,.as-card,.as-stage,.as-start,.as-start-side,.as-start-primary,.as-choice){background:#151e2f!important;color:#e6edf7!important}
+html[data-theme=dark] #app.is-assistant :is(h1,h2,h3,p,span,summary,.as-link){color:#c2cee0!important;opacity:1!important}
+html[data-theme=dark] #app #rail{background:#151e2f!important}
+html[data-theme=dark] #app .run-wrap .bk-file{background:#151e2f!important}
+html[data-theme=dark] .acct-page button.as-btn.alt{background:#1d2a40!important;color:#e6edf7!important}
+html[data-theme=dark] #app .bk-row:has(input[type=file]){background:#1d2a40!important;border-color:#65758f!important}
+html[data-theme=dark] #app .bk-row:has(input[type=file])>span{color:#e6edf7!important}
+html[data-theme=dark] #app .bk-row input[type=file]::file-selector-button{background:#2a3b58!important;color:#e6edf7!important;border-color:#65758f!important}

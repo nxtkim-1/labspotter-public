@@ -270,3 +270,5 @@ html:has(.acct-root),body:has(.acct-root){background:#F5F7FB!important}
 .acct-narrow{max-width:420px}.acct-h{font:700 28px 'Space Grotesk',sans-serif;margin:0 0 8px}
 @media(max-width:820px){.lp-hero{grid-template-columns:1fr;padding:20px 16px 48px}.lp-preview{transform:none}.lp-band{margin:40px 12px 0;padding:32px 22px}.lp-sec{padding-top:40px}}
 @media(max-width:480px){.lp-nav-cta{display:none}.lp-cta .as-btn,.lp-cta .lp-ghost{width:100%}}
+
+.speak-note{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-top:12px}.speak-note .as-quiet{display:block;max-width:65ch;line-height:1.5}.speak-note .vc-mic{flex:none;min-height:44px}.speak-note .rec{background:#b91c1c;color:#fff}

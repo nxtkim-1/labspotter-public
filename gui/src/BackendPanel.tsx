@@ -103,7 +103,7 @@ export function BackendPanel({ onAnalyzed, onExample }: { onExample?: () => void
 
     return <div className="bk">
         <details className="bk-conn" key={health && !locked ? 'c' : 'o'} open={!(health && !locked)}>
-            <summary>{ready ? 'Setup - connected to ' + ep : health && !locked ? 'Setup - connected, analysis not available on this machine' : 'Connect to the backend'}</summary>
+            <summary>{health && !locked ? 'Connection settings (advanced)' : 'Connect to the backend'}</summary>
         <div className="bk-row"><span>endpoint</span>
             <input value={ep} onChange={e => { setEp(e.target.value); if (e.target.value !== tokenEp) setManualToken(''); }} spellCheck={false} />
             <button className="bk-load" onClick={() => { saveApiEndpoint(ep); refresh(ep); }}>Connect</button>

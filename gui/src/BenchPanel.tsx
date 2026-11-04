@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { VoiceControl } from './VoiceControl';
+import { VoiceControl, SpeakNote } from './VoiceControl';
 import { agentCoach, agentReview, benchNote, benchClaim, benchCreate, benchFreeze, benchInfo, benchResume, benchList, benchContinue, BenchSessionRow, BenchCp, BenchLabels } from './backend';
 
 const when = (t?: number) => t ? new Date(t * 1000).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit' }) : '';
@@ -107,9 +107,10 @@ export function BenchPanel({ ep, enabled, claimTag, voice }: { ep: string; enabl
                     <button className="bk-load" onClick={() => { try { navigator.clipboard.writeText(token); } catch { /* clipboard unavailable: use Show token */ } }}>Copy token</button></div></details></div>}
         {sid && <details className="bf-more" open><summary>Session log ({cps.length})</summary><SessionLog cps={cps} /></details>}
         {sid && mode === 'research' && <details className="bf-more" open><summary>Add a note (observation or question)</summary>
-            <div className="bf-noterow"><select value={noteKind} onChange={e => setNoteKind(e.target.value)}><option value="observation">Observation</option><option value="question">Question</option></select>
+            <div className="bf-noterow"><select value={noteKind} onChange={e => setNoteKind(e.target.value)}><option value="observation">Observation</option><option value="spoken_observation">Spoken observation (Meta transcript)</option><option value="question">Question</option></select>
                 <input type="text" maxLength={500} placeholder="what you saw or want to ask" value={noteText} onChange={e => setNoteText(e.target.value)} />
                 <button className={'bk-load' + (off || !noteText.trim() ? ' disabled' : '')} disabled={off || !noteText.trim()} onClick={addNote}>Add</button></div>
+            <SpeakNote ep={ep} voice={enabled ? voice : undefined} onText={t => { setNoteKind('spoken_observation'); setNoteText(t.slice(0,500)); }} />
             <div className="bk-note">Saved with the session as your own words, unverified. The classifier does not write notes.</div>
         </details>}
         {sid && mode === 'teaching' && <div className="bf-teach"><div className="bf-sub">Guided walkthrough</div>

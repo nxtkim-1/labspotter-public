@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { voiceTranscribe } from './backend';
 
 // Turn a recorded blob into 16 kHz mono 16-bit PCM WAV (what the Meta endpoint takes).
-async function toWav(blob: Blob): Promise<Blob> {
+export async function toWav(blob: Blob): Promise<Blob> {
     const ctx = new AudioContext();
     const buf = await ctx.decodeAudioData(await blob.arrayBuffer());
     void ctx.close();
@@ -57,5 +57,38 @@ export function VoiceControl({ ep, voice, canDo, run }: { ep: string; voice?: { 
                 : <span className="vc-hint"> - no matching command. Voice can only start a session, save a result or freeze.</span>}
             <button className="vc-x" onClick={() => setHeard(null)}>Dismiss</button></div>}
         {err && <div className="bk-error"><b>Voice:</b> {err}</div>}
+    </div>;
+}
+
+// Record a short spoken observation. The transcript lands in the note box as an editable draft. Nothing is saved until the person taps Save note.
+export function SpeakNote({ ep, voice, onText }: { ep: string; voice?: { available: boolean; reason: string }; onText: (t: string) => void }) {
+    const [state, setState] = useState<'idle' | 'rec' | 'send'>('idle');
+    const [err, setErr] = useState(''); const [done, setDone] = useState(false);
+    const [notice, setNotice] = useState(false);
+    const rec = useRef<MediaRecorder | null>(null); const stopT = useRef<number>(0);
+    useEffect(() => () => { window.clearTimeout(stopT.current); if (rec.current) { rec.current.onstop = null; rec.current.stream.getTracks().forEach(t => t.stop()); if (rec.current.state !== 'inactive') rec.current.stop(); } }, []);
+    const avail = !!voice && voice.available;
+    const stop = () => { window.clearTimeout(stopT.current); if (rec.current && rec.current.state !== 'inactive') rec.current.stop(); };
+    const start = async () => {
+        setErr(''); setDone(false);
+        if (localStorage.getItem('labspotter_voice_notice_v1') !== 'yes') { setNotice(true); return; }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const chunks: Blob[] = []; const r = new MediaRecorder(stream); rec.current = r;
+            r.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+            r.onstop = async () => {
+                stream.getTracks().forEach(t => t.stop()); setState('send');
+                try { const o = await voiceTranscribe(ep, await toWav(new Blob(chunks))); onText(o.transcript); setDone(true); }
+                catch (e: any) { setErr(String(e && e.message ? e.message : e)); } finally { setState('idle'); }
+            };
+            r.start(); setState('rec'); stopT.current = window.setTimeout(stop, 29000);
+        } catch (e: any) { setErr(e && e.name === 'NotAllowedError' ? 'Microphone permission was blocked. Allow it in the browser to speak a note.' : 'No microphone available.'); setState('idle'); }
+    };
+    return <div className="speak-note">
+        <button className={'as-btn alt vc-mic' + (state === 'rec' ? ' rec' : '')} disabled={!avail || state === 'send'} onClick={state === 'rec' ? stop : start} aria-label="Speak a note">
+            {state === 'rec' ? 'Stop recording' : state === 'send' ? 'Writing it down...' : 'Speak a note'}</button>
+        <span className="as-quiet">{avail ? (done ? 'Review before saving.' : 'Speak a note, then review before saving. Up to 29 seconds.') : 'Voice notes are off here.'}</span>
+        {notice && <div className="as-note-notice" role="dialog" aria-label="Before your first voice note"><p>Your audio is sent to Meta to write it down. With free credits, Meta may use it for product improvement. This app does not keep the audio.</p><button className="as-btn alt" onClick={() => { localStorage.setItem('labspotter_voice_notice_v1', 'yes'); setNotice(false); void start(); }}>Continue and record</button><button className="as-link" onClick={() => setNotice(false)}>Cancel</button></div>}
+        {err && <span className="bk-error">{err}</span>}
     </div>;
 }

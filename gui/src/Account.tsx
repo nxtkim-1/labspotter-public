@@ -66,6 +66,10 @@ function Auth({ me, start, onAuthed, onBack }: { me: Me; start: 'login' | 'signu
     </div></div>;
 }
 
+function ThemeChoice() {
+    const [theme, setTheme] = useState(() => localStorage.getItem('labspotter_theme') || 'light');
+    return <label>Theme <select aria-label="Theme" value={theme} onChange={e => { const v=e.target.value; setTheme(v); localStorage.setItem('labspotter_theme',v); document.documentElement.dataset.theme=v; }}><option value="light">Light</option><option value="dark">Dark</option></select><p className="as-quiet">Remembered on this browser.</p></label>;
+}
 function Settings({ user, onOut, onBack }: { user: NonNullable<User>; onOut: () => void; onBack: () => void }) {
     const [cur, setCur] = useState(''); const [nw, setNw] = useState(''); const [delPw, setDelPw] = useState('');
     const [msg, setMsg] = useState(''); const [err, setErr] = useState('');
@@ -73,6 +77,7 @@ function Settings({ user, onOut, onBack }: { user: NonNullable<User>; onOut: () 
     return <div className="acct-root"><div className="acct-page">
         <button className="as-link" onClick={onBack}>Back to the app</button>
         <h1>Settings</h1>
+        <section className="acct-card"><h2>Appearance</h2><ThemeChoice /></section>
         <section className="acct-card"><h2>Account</h2><p>Signed in as <b>{user.name}</b>.</p>
             <button className="as-btn alt" onClick={() => run(async () => { await post('/api/auth/logout', {}); onOut(); })}>Sign out</button></section>
         <section className="acct-card acct-form"><h2>Change password</h2>

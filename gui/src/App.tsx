@@ -117,6 +117,7 @@ export function App() {
     const [frame, setFrame] = useState<{ boxes: DetBox[]; sel: number | null }>({ boxes: [], sel: null });
     const [marks, setMarks] = useState<Record<string, string | undefined>>({});
     const [showEvidence, setShowEvidence] = useState(false);
+    const [revFilter, setRevFilter] = useState<'all' | 'open' | 'flagged'>('all');
     const [liveRun, setLiveRun] = useState<{ tag: string; device: string; alert: string; kind: 'uploaded' | 'stored'; preds?: any[]; blob?: string; fname?: string } | null>(null);
     const c = clips.find((x: any) => x.id === selId);
     const det = detFor(c);
@@ -175,6 +176,7 @@ export function App() {
                 <span className="t3pct">{pct(s)}</span>
             </div>)}</div></details>
         <div className="panel-actions">
+            <button className="ctl primary next-clip" onClick={() => { const i = clips.findIndex((x: any) => x.id === selId); setSelId(clips[(i + 1) % clips.length].id); setShowEvidence(false); }}>Next clip</button>
             {det && <button className={'ctl' + (boxes ? ' on' : '')} onClick={() => setBoxes(b => !b)}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="4" width="16" height="16" rx="3" /></svg>
                 {boxes ? 'Hide boxes' : 'Show boxes'}</button>}
@@ -199,7 +201,8 @@ export function App() {
     </div>;
 
     const clipsView = <div className="view clips-view">
-        {clipIndex}
+        <div className="view-head"><h1>Clips</h1><p className="view-lede">Example bench steps with what LabSpotter suggests. Play a clip, then open the details you need.</p></div>
+        <aside className="index-card"><div className="index-title">Example clips</div>{clipIndex}</aside>
         {clipStrip}
         <div className="work">
             <div className="work-left">
@@ -228,13 +231,26 @@ export function App() {
         <div className="rev-note">Model-predicted, not verified. Video playback is only in this tab. The clip was uploaded to the analysis server for analysis: the server deletes the video file afterwards but keeps the result files and one still frame from the clip under this run tag until the host owner removes them. Marks are local and are not review decisions.</div>
     </div> : <div className="rev-live-empty">No run yet this session. Analyze a clip on the Tools tab and it will show up here for review.</div>;
 
+    const nMarked = clips.filter((x: any) => marks[x.id]).length;
+    const nFlagged = clips.filter((x: any) => marks[x.id] === 'flagged').length;
+    const shown = clips.filter((x: any) => revFilter === 'all' || (revFilter === 'open' ? !marks[x.id] : marks[x.id] === 'flagged'));
+    const nextOpen = () => { const x = clips.find((y: any) => !marks[y.id]); if (!x) return; setRevFilter('all'); setTimeout(() => { const el = document.querySelector('[data-rev-id="' + x.id + '"]') as HTMLElement | null; if (el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); (el.querySelector('button') as HTMLElement | null)?.focus({ preventScroll: true }); } }, 0); };
     const reviewView = <div className="view rev-wrap">
-        <h1>Review queue</h1>
-        <div className="ledger" data-testid="ledger"><span className="ledger-num">{String(clips.filter((x: any) => marks[x.id]).length).padStart(2, '0')} / {String(clips.length).padStart(2, '0')}</span><span className="ledger-cap">demo clips marked locally (seen or flagged) - not review decisions</span></div>
+        <div className="view-head"><h1>Review queue</h1><p className="view-lede">Look over each suggestion and mark it. Marks stay on this device.</p></div>
+        <section className="rev-summary">
+        <div className="ledger" data-testid="ledger"><span className="ledger-num">{String(nMarked).padStart(2, '0')} / {String(clips.length).padStart(2, '0')}</span><span className="ledger-cap">demo clips marked locally (seen or flagged) - not review decisions</span></div>
+        <div className="rev-meter" aria-hidden="true"><i style={{ width: (nMarked / clips.length * 100) + '%' }}></i></div>
+        <button className="ctl primary rev-next" onClick={nextOpen} disabled={nMarked === clips.length}>{nMarked === clips.length ? 'All clips marked' : 'Review next unmarked clip'}</button>
+        </section>
         {liveCard}
         {lr && <div className="group-label">Demo clips - imported example predictions (origin unverified)</div>}
         <p className="rev-sub">Demo clips with imported example predictions (origin unverified), grouped under one pending review alert. Nothing here is confirmed yet.</p>
-        <div className="rev-list">{clips.map((x: any) => <div className="rev-item" key={x.id}>
+        <div className="rev-filter" role="radiogroup" aria-label="Show clips">
+            {([['all', 'All'], ['open', 'Not marked'], ['flagged', 'Flagged']] as const).map(([k, l]) =>
+                <button key={k} role="radio" className={'rev-fbtn' + (revFilter === k ? ' on' : '')} aria-checked={revFilter === k} onClick={() => setRevFilter(k)}>{l}{k === 'flagged' && nFlagged ? ' (' + nFlagged + ')' : ''}</button>)}
+        </div>
+        {shown.length === 0 && <div className="rev-live-empty">{revFilter === 'flagged' ? 'Nothing flagged yet.' : 'Every demo clip has a mark.'}</div>}
+        <div className="rev-list">{shown.map((x: any) => <div className="rev-item" key={x.id} data-rev-id={x.id}>
             <img src={x.media.poster} alt="" />
             <div className="rev-mid"><b>{human(x.predicted)}</b>
                 <span>Model suggestion - not yet confirmed</span>
@@ -260,8 +276,8 @@ export function App() {
     const runView = <div className="view run-wrap">
         <h1>Add a clip</h1>
         <p className="rev-sub">Add a short clip of a bench step. LabSpotter suggests what it sees, and you confirm each step.</p>
-        <BackendPanel onAnalyzed={setLiveRun} onExample={() => setView('clips')} />
-        <details className="diag"><summary>More: example data, pipeline and sources (not your upload)</summary>
+        <section className="tools-card"><BackendPanel onAnalyzed={setLiveRun} onExample={() => setView('clips')} /></section>
+        <details className="diag tools-more"><summary>More: example data, pipeline and sources (not your upload)</summary>
         <div className="rev-sub">Hand boxes on the Clips tab are stored detections on the demo clips, not live tracking of your upload.</div>
         <div className="group-label">Imported example predictions - tag fresh1 - origin unverified - not the uploaded clip</div>
         <div className="bench">
