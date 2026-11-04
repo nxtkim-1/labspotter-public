@@ -92,3 +92,7 @@ export const benchNote = (ep: string, sid: string, kind: string, text: string) =
 
 export const benchLabel = (ep: string, sid: string, run_tag: string, decision: 'agreed' | 'corrected', label: string) =>
     req<{ session_id: string; checkpoint: BenchCp } & BenchLabels>(ep, '/api/bench/session/' + sid + '/label', { method: 'POST', headers: J, body: JSON.stringify({ run_tag, decision, label }) });
+
+export type Organization = { projects: { id: string; name: string; created: number }[]; labels: Record<string, { name: string; project: string }> };
+export const getOrganization = (ep: string) => req<Organization>(ep, '/api/bench/projects');
+export const saveOrganization = (ep: string, data: Record<string, string>) => req<Organization>(ep, '/api/bench/projects', { method: 'POST', headers: J, body: JSON.stringify(data) });
