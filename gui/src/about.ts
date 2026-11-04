@@ -2,7 +2,7 @@
 export const ABOUT = {
     tagline: 'A calm second pair of eyes for the bench.',
     mission: 'Lab work is full of small steps that are easy to lose when you are interrupted. We want anyone at a bench to pick up exactly where they left off, with a calm tool that suggests and never decides.',
-    by: 'A project by Thomas Kim, made for the Meta Global AI Developer Hackathon.',
+    by: 'A project by Thomas Kim. Powered by Meta video features and optional transcription and recaps. Made for the Meta Global AI Developer Hackathon.',
     headline: 'Keep your place at the bench.',
     sub: 'Follow a written guide, add a short clip for a suggestion of what it shows, and pause without losing your notes.',
     principles: [
