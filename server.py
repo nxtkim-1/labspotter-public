@@ -144,6 +144,7 @@ def bench_route(h, method, p, ao):
             if not isinstance(v, str) or not v or len(v) > 200: raise B.BenchError(400, "field '" + k + "' (string) is required")
             return v
         m = re.fullmatch(r"/api/bench/session/([0-9a-f]{12})(?:/(claim|freeze|note|continue|label))?", p)
+        if p == "/api/bench/projects" and method in ("GET", "POST"): return send(h, 200, B.organization(RR, body if method == "POST" else None), ao=ao)
         if method == "POST" and p == "/api/bench/session" and HOSTED and len(B.list_sessions(RR).get("sessions", [])) >= HOSTED_MAX_SESSIONS: return send(h, 429, {"error": "saved-session limit reached (" + str(HOSTED_MAX_SESSIONS) + ")"}, ao=ao)
         if method == "POST" and p == "/api/bench/session": out = B.create_session(RR, str(body.get("name", ""))[:80]); code = 201
         elif method == "POST" and p == "/api/bench/resume": out = B.resume_token(RR, need("token")); code = 200
