@@ -1,40 +1,130 @@
+<p align="center"><img src="gui/public/brand/labspotter-mark-light.svg" width="64" alt="LabSpotter colony-cluster logo"></p>
+
 # LabSpotter
 
-A calm second pair of eyes for the bench. LabSpotter helps you keep your place in a lab procedure: it follows a written guide, suggests what a short video clip shows, and saves your own notes and confirmations so you can pause and pick up where you left off.
+**Keep your place. Keep the evidence.**
 
-Built for the Meta Global AI Developer Hackathon. Powered by Meta: V-JEPA 2 video features, optional Meta speech transcription, and optional Meta session recaps. Session persistence is implemented by this app, not a Meta storage service.
+A lab session is more than a predicted action. It is the guide you were following, the observation you made, the step you confirmed, and the place you need to return to after an interruption.
 
-## The problem
-Lab work is made of small steps that are easy to lose when you are interrupted. Paper notes and memory do not say which step you had confirmed or what you were doing when you stopped.
+LabSpotter brings that record together in a responsive web app: short-video action suggestions, written guides, editable observation notes, and saved sessions you can reopen and export.
 
-## What it does
-- **Guide.** A written, step-by-step guide. A step is marked done only when you tap it yourself. The app never marks a step for you.
-- **Clip suggestion.** Add a short clip. A frozen V-JEPA 2 video encoder produces features, and a small classifier we trained on public lab-action clips suggests which lab action it sees. It is a suggestion, shown as not confirmed.
-- **Pause and continue.** Pause saves your notes and your own confirmations. Continue shows them back to you. Saved entries cannot tell you the bench's current state; check it in person.
-- **Optional recap.** A separate Meta model recap (Meta/Spark) can write a short summary of a saved session. It is off unless the server's operator turns it on with a Meta key.
-- **Accounts (hosted mode).** Sign up, sign in, change password, delete your account and data. Each account only sees its own sessions and runs.
+Built by Thomas Kim for the Meta Global AI Developer Hackathon. Powered by Meta V-JEPA 2, with optional Meta speech transcription and session recaps. The app implements its own accounts, storage, and session recovery.
 
-- **Observation log.** Typed and Meta-transcribed notes are saved with server save times and their source. Download the session record as JSON. Save time is not verified event time.
-- **Across browsers.** Sign into the same account on the same hosted site to restore server-saved sessions. Theme and Review demo marks stay in the browser. Phone and desktop are responsive web views, not native apps.
+[Product guide](docs/PRODUCT_GUIDE.md) · [Demo walkthrough](DEMO.md) · [Build evidence](docs/BUILD_EVIDENCE.md) · [Technical record](docs/DEVELOPMENT_NOTES.md)
 
-## Privacy
-- Video analysis runs on the machine that runs the server: your own computer when you run it locally, or the host's server when you use a hosted copy (so clips you add to a hosted site are processed there). The clip is not sent to Meta for the suggestion.
-- Meta features are off unless the server's operator turns them on with a Meta key. If they are on, selected clips and/or saved entries may be sent to Meta. The operator controls this, not individual users. In hosted mode (`LABSPOTTER_HOSTED=1`) agent routes are disabled. Voice can be separately enabled by an operator only for invite-only accounts, with a server-side key, per-account and global lifetime limits, and a first-recording notice.
-- Suggestions are not a safety check.
+![LabSpotter guide and timestamped observation log](docs/images/1-observation-desktop.png)
 
-## Status
-Development-grade. The suggestion head scored 0.512 balanced accuracy on a 229-clip validation set (8 classes). That set has since been used for development, so it is not a blind test, and balanced accuracy is a different metric from the raw-accuracy target of 75%, so the two are not comparable. The 75% target is not met, and this is not a finished detector. Background and history are in `docs/DEVELOPMENT_NOTES.md`.
+*Actual local browser capture: written guide, user-confirmed step, and a saved Meta-transcribed test observation. Generated test audio; save times are not verified event times.*
 
-## Run it
-Needs Python 3.10+, ffmpeg, and Node 22.18 or newer for the GUI tests. Real analysis also needs torch, transformers and pillow (about 3 GB RAM). The first analysis downloads about 1.5 GB of V-JEPA 2 weights from Hugging Face.
+## From an observation to a record
+
+1. **Start with a guide or video.** Follow a written guide, or add a short clip for an eight-action model suggestion.
+2. **Keep your judgment separate.** Agree with or change the suggested action. Only your own tap marks a guide step done.
+3. **Capture what you noticed.** Type a note, or use Meta transcription when the operator has enabled voice. Edit the draft before saving.
+4. **Pause without losing your place.** Reopen server-saved entries and your confirmed guide steps. In account mode, the same account can restore them in another browser on the same site.
+5. **Organize and export.** Name saved sessions, assign them to projects, filter the list, and export one session or the sessions in view as JSON.
+
+A saved time means when an entry was saved, not proof of when an event happened. Restoring a record does not establish the bench's current condition.
+
+## What makes it work
+
+### Meta video features, a trained lab-action head
+
+The frozen V-JEPA 2 encoder turns a short video into features. A StandardScaler + logistic-regression classifier trained for eight lab-action classes turns those features into a reviewable suggestion. The app preserves that model suggestion separately from a person's later confirmation or correction.
+
+Classes: Add, Analytical Measurement, Collect Layer, Measure Liquid, Measure Solid, Phase Separation, Stir, and No action.
+
+### Notes with a traceable source
+
+Typed observations and user-saved Meta transcripts appear in the session log with their source and server save time. A transcript starts as an editable draft, not an automatic finding. The working voice demonstration used generated test audio sent through the real Meta transcription route; it was not a physical-phone microphone test.
+
+### Pause, restore, and continue
+
+The session store keeps notes, model claims, and user actions together. Continuing a session rechecks the saved record's integrity before restoring it. Account mode isolates records by account. Theme preferences and Review demo marks remain browser-local.
+
+### Projects that keep the record intact
+
+Name a saved session, create a project, and assign the session to it. Labels and project membership are account/server-scoped metadata, separate from the original observation checkpoints. Export a single session or the filtered sessions without rewriting the evidence.
+
+![Projects page with a named session, project assignment, and export controls](docs/images/3-projects-desktop.png)
+
+[Dark phone-width Projects capture](docs/images/4-projects-phone.png) · [Dark phone-width observation capture](docs/images/2-observation-phone.png)
+
+*Actual local browser capture. Projects and labels persisted into a fresh browser context on the same account/server; the test export contained one selected session.*
+
+### A focused interface
+
+Light and dark themes, desktop and phone-width layouts, a guide beside the active work, and a saved-entry log. The camera flow captures browser video segments and shows when segments are skipped; it is not continuous surveillance or proof that every action was captured.
+
+## The current build
+
+The video-to-suggestion, saved-session recovery, session labels, Projects page, JSON export, account flows, and responsive interface have been exercised in development. The real Meta transcription route returned an editable transcript draft that was saved, and the same entries were restored in a fresh browser context. These are separate checks with different scopes, not a claim that every component has run together on a deployed service.
+
+**Model measurement:** the selected `frozen384` head scored **0.512 balanced accuracy on 229 official validation clips from 5 sources, across 8 classes**. Those clips have since been used for development, so this is not a blind test. Balanced accuracy is not raw accuracy. The 75% raw-accuracy target is not met. Successful demo clips illustrate the workflow, not overall accuracy.
+
+The app suggests actions. It does not verify protocol completion, diagnose contamination, or provide a safety clearance. See [the evidence and scope notes](docs/BUILD_EVIDENCE.md).
+
+## Run it locally
+
+You need Python 3.10+, `ffmpeg` on PATH, and enough memory for the encoder (about 3 GB in the recorded development environment). The first real analysis downloads about 1.5 GB of V-JEPA 2 weights. Node 22.18+ is needed for GUI unit tests; Node and npm are needed to rebuild the frontend.
+
+```bash
+git clone https://github.com/nxtkim-1/labspotter-public.git
+cd labspotter-public
+bash ./run_local.sh --check   # checks only; installs and starts nothing
+bash ./run_local.sh           # installs the CPU dependencies and starts the server
 ```
-python3 server.py            # local: http://127.0.0.1:8765 , the launch token is printed once
-bash ./run_local.sh          # helper (only its --check dry run is tested; it has not been run end to end)
+
+Open `http://127.0.0.1:8765/`. Follow the launcher's instructions to read your local start code and enter it in the app. Do not share that code or include it in screenshots.
+
+The helper uses a local virtual environment and version pins; it is not a complete lockfile or a deployment tool. Historical environment-specific launch results are kept in [the runbook](docs/RUNBOOK.md). macOS/Windows hosting and physical-phone capture are not certified by the responsive browser checks.
+
+To rebuild the frontend:
+
+```bash
+cd gui
+npm ci
+npm run build
 ```
-Hosted mode is set with environment variables (`LABSPOTTER_HOSTED=1`, `LABSPOTTER_PUBLIC_HOST`, `LABSPOTTER_DATA_DIR`, and `LABSPOTTER_TRUST_PROXY=1` behind a proxy). See `WIRING.md`.
 
-## Tests
-`bash ./run_all_tests.sh` runs the unit tests, the GUI unit tests, and a browser check against a stub server (not the real backend). Real-encoder browser checks are separate and need `LABSPOTTER_REAL_E2E=1`. A passing run is development evidence for that scope only.
+For direct Python launch, environment variables, API wiring, and recovery, see [the runbook](docs/RUNBOOK.md) and [wiring notes](WIRING.md). Their older sections are dated development records; the current product scope is summarized here and in the product guide.
 
-## Licence and notices
-Code: MIT, see `LICENSE`. Demo clips are IBM Research Zurich lab-action clips (CDLA-Permissive-2.0); fonts and packages keep their own licences. See `THIRD-PARTY-NOTICES.txt`.
+## Test it
+
+```bash
+bash ./run_all_tests.sh
+```
+
+The runner separates Python checks, GUI unit checks, and browser checks against a **stub backend**. Read any `SKIPPED` lines: a summary pass is not proof that every optional browser check ran. Real-encoder checks are separate and require the model dependencies and explicit opt-in. [Build evidence](docs/BUILD_EVIDENCE.md) explains what each check establishes.
+
+## Data and optional Meta features
+
+- Video-action inference runs on the machine running `server.py`. With a hosted copy, uploaded video is processed on that host, not on your phone.
+- The trained action-suggestion path does not send video to Meta's hosted API. Optional Meta quick-look, transcription, or recap features can send their relevant clip, audio, or saved text to Meta when enabled.
+- Meta features are operator-controlled and off without the required configuration. Account-mode agent routes remain disabled. Voice has a separate invite-only enablement path with server-side credentials and per-account/global lifetime limits.
+- Do not use sensitive footage or notes in an experimental Meta-enabled deployment. This repository is source code, not a claim that a public service is deployed.
+
+## Next
+
+- Stronger action recognition, evaluated on a fresh source-separated holdout.
+- A reproducible install and measured performance under load.
+- Physical-phone microphone and camera checks, plus broader host-platform tests.
+- Richer project workflows and record reuse, beyond the current labels, grouping, and JSON export.
+
+Working features and planned work stay separate. The technical history is retained rather than replaced by the demo narrative.
+
+## Explore the source
+
+| Area | Files |
+| --- | --- |
+| Web interface | [`gui/src/`](gui/src/) |
+| HTTP server and accounts | [`server.py`](server.py), [`auth.py`](auth.py) |
+| Video-action pipeline | [`chain/`](chain/), [`heads/active.json`](heads/active.json) |
+| Saved-session engine | [`engine/`](engine/) |
+| Voice controls and limits | [`voice_gate.py`](voice_gate.py), [`voice_allowance.py`](voice_allowance.py) |
+| Development measurements | [`docs/VIDEO_ACTION_CHAIN.md`](docs/VIDEO_ACTION_CHAIN.md), [`DEV_RESULTS_1427.md`](DEV_RESULTS_1427.md) |
+| Runtime and regression checks | [`tests/`](tests/), [`gui/`](gui/) |
+
+## Licence and credits
+
+Code: [MIT](LICENSE). The included demo clips are IBM Research Zurich lab-action clips distributed under CDLA-Permissive-2.0. Demo footage is third-party material, not footage of Thomas's own experiment. Fonts, models, data, and packages retain their own terms. See [third-party notices](THIRD-PARTY-NOTICES.txt) and [font provenance](docs/FONT-PROVENANCE.md).
