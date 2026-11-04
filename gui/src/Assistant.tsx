@@ -152,8 +152,9 @@ export function Assistant({ onTools }: { onTools: () => void }) {
         setUnread(liveOn.current);
         stopLive();
         run('Saving your place', async () => {
-            await benchFreeze(ep, sid, 'paused ' + new Date().toISOString().slice(0, 16));
-            const lines = await refreshLog(sid).then(describe);
+            const checkpoints = await refreshLog(sid);
+            if (checkpoints.length) await benchFreeze(ep, sid, 'paused ' + new Date().toISOString().slice(0, 16));
+            const lines = describe(checkpoints);
             setRestored(false); setPaused(true); setTimeout(() => { try { window.scrollTo(0, 0); } catch { /* ignore */ } }, 50);
             setOpenQuestions([]); let text = '', from: 'meta' | 'local' = 'local';
             try { const r = await agentCoach(ep, sid); text = joinSentences([r.recap, ...(r.next_steps || [])]); setOpenQuestions(r.open_questions || []); from = 'meta'; } catch { text = localRecap(lines); }
@@ -264,12 +265,12 @@ export function Assistant({ onTools }: { onTools: () => void }) {
         {err && <div className="as-card as-err" role="alert"><p>Something went wrong: {err}</p><button className="as-btn alt" onClick={() => setErr('')}>Dismiss</button></div>}
 
         {started && !busy && paused && <div className="as-pause-focus" role="dialog" aria-label="Paused"><div className="as-card as-pause">
-            <h2>{restored ? 'Welcome back' : 'Paused'}</h2><p className="as-quiet">{restored ? 'Your saved place is restored.' : 'Your place is saved.'}</p>
+            <h2>{restored ? 'Welcome back' : 'Paused'}</h2><p className="as-quiet">{restored ? 'Your saved place is restored.' : savedEntries.length ? 'Your place is saved.' : 'Nothing has been saved in this session yet.'}</p>
             {unread && hasHeld && <><p className="as-quiet">The last few seconds before you paused are kept in this tab only and have not been read yet. Closing or reloading the page loses them.</p><button className="as-btn alt" onClick={() => { const sg = heldSeg.current; heldSeg.current = null; setHasHeld(false); setPaused(false); if (sg) processSeg(sg, true); }}>Read the last moment</button></>}
             {unread && !hasHeld && <p className="as-quiet">The last few seconds before you paused were not read. Go live again to cover them.</p>}
             <div className={'as-ai' + (recapFrom === 'meta' ? ' meta' : ' plain')}>
                 <p className="as-ai-kicker">{recapFrom === 'meta' ? 'AI summary' : 'Summary of your saved entries'}</p>
-                {(() => { const t = recap.replace(/\s*\((?:p|score|probability)\s*[=:]\s*[0-9.]+\)/gi, '').replace(/\b(?:p|score)\s*=\s*[0-9.]+/gi, ''); const parts = recapFrom === 'local' ? log.filter(x => x !== 'Protocol loaded') : (t.match(/[^.!?]+[.!?]+(\s|$)/g) || [t]); if (true) return <ul className="as-recap-list">{parts.map((x, k) => <li key={k}>{x.trim()}</li>)}</ul>; const cut = t.length > 320 ? 2 : parts.length; const head = parts.slice(0, cut).join('').trim(); const rest = parts.slice(cut).join('').trim(); return <><p className="as-recap">{head}</p>{rest && <details className="as-more"><summary>More</summary><p className="as-recap">{rest}</p></details>}</>; })()}
+                {(() => { const t = recap.replace(/\s*\((?:p|score|probability)\s*[=:]\s*[0-9.]+\)/gi, '').replace(/\b(?:p|score)\s*=\s*[0-9.]+/gi, ''); const parts = recapFrom === 'local' ? (log.filter(x => x !== 'Protocol loaded').length ? log.filter(x => x !== 'Protocol loaded') : [localRecap(log)]) : (t.match(/[^.!?]+[.!?]+(\s|$)/g) || [t]); if (true) return <ul className="as-recap-list">{parts.map((x, k) => <li key={k}>{x.trim()}</li>)}</ul>; const cut = t.length > 320 ? 2 : parts.length; const head = parts.slice(0, cut).join('').trim(); const rest = parts.slice(cut).join('').trim(); return <><p className="as-recap">{head}</p>{rest && <details className="as-more"><summary>More</summary><p className="as-recap">{rest}</p></details>}</>; })()}
                 {recapFrom === 'meta' && <><p className="as-powered">Powered by Meta. Suggestions from saved entries, not checked.</p>{openQuestions.length > 0 && <section><h3>Worth checking</h3><ul>{openQuestions.map((q, i) => <li key={i}>{q}</li>)}</ul></section>}</>}
             </div>
             <p className="as-quiet">Saved entries cannot show the bench's current state. Check it in person.</p>
@@ -315,7 +316,7 @@ export function Assistant({ onTools }: { onTools: () => void }) {
         </div>}
         {started && !busy && !paused && !it && !(guide && nowIdx >= 0 && !live) && <div className="as-card">
             <h2>Session open</h2>{ready ? <p className="as-quiet">Add a video to carry on.</p> : <p className="as-quiet">Video analysis isn't set up on this computer, so follow the written guide and keep notes. Pause any time to save your place.</p>}
-            {ready && <div className="as-actions"><button className="as-btn big" onClick={() => pick.current && pick.current.click()}>Add a video</button></div>}</div>}
+            {ready && <div className="as-actions">{secure && !live && <button className="as-btn big" onClick={goLive}>Go live</button>}<button className="as-btn alt" onClick={() => pick.current && pick.current.click()}>Add a video</button></div>}</div>}
         </div>
 
         <div className="as-side">
@@ -360,4 +361,4 @@ export function Assistant({ onTools }: { onTools: () => void }) {
         <button className="as-link as-tools" onClick={onTools}>Tools and example clips</button>
         </div>
     </div>;
-}
+                                                                                       }
