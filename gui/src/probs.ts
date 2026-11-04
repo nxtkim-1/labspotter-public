@@ -53,3 +53,9 @@ export function classLabel(key: unknown): string {
 export function formatPct(p: number): string {
     return isNum(p) ? (p * 100).toFixed(1) + '%' : '-';
 }
+
+// Saved evidence keeps the original class key, including spaces. Presentation only.
+export function savedClaimLabel(note: string): string {
+    const match = /claim: (.+?) \(p=/.exec(note);
+    return match ? classLabel(match[1]) : 'a video action';
+}
