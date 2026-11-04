@@ -107,7 +107,7 @@ export async function openCamera(opts: CameraOptions = {}, deps: CameraDeps = de
 
 // ---------- 2. rolling segment recorder ----------
 
-export const MIME_PREFERENCE = ['video/mp4;codecs=avc1', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8'] as const;
+export const MIME_PREFERENCE = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'] as const;
 
 /** Minimal MediaRecorder surface this module uses. */
 export interface RecorderLike {
