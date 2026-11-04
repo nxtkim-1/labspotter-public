@@ -1,0 +1,9 @@
+{
+ "head_file": "frozen384.pkl",
+ "head_sha256": "c5af2cb494eeee2880ec8d7103df10f522dfd2be5de68eb42f8548bc4c733c64",
+ "features": ["h", "lg"],
+ "feature_note": "concat(h = V-JEPA2 last_hidden_state token mean 1024-d, lg = SSv2 classifier logits 174-d) = 1198-d, in this order",
+ "label": "frozen384 (StandardScaler + LogisticRegression C=0.1 balanced liblinear), trained on 384 IBM TRAIN clips",
+ "measured": "one final eval, 229 official-validation clips, 5 sources: balanced accuracy 0.512 (not 75%). Development-grade from now on (validation set is spent).",
+ "swap": "copy a new head pickle (StandardScaler+classifier with predict_proba) into heads/, edit head_file/head_sha256/features here; nothing else changes"
+}

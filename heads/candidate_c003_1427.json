@@ -1,0 +1,9 @@
+{
+ "head_file": "candidate_c003_1427.pkl",
+ "head_sha256": "ddf47d5fb2725c2701151f909463dfc15721987545909ab56c8d3858b217bb01",
+ "features": ["h", "lg"],
+ "feature_note": "same as frozen384: concat(h 1024-d V-JEPA2 last_hidden_state mean, lg 174-d SSv2 logits) = 1198-d",
+ "label": "DEV-CANDIDATE c003 (StandardScaler + LogisticRegression C=0.03 balanced liblinear), trained on 1427 official-training clips (384 + 1043, 97 unique sources)",
+ "measured": "DEVELOPMENT ONLY. C chosen by source-grouped train-CV (0.7146 pooled OOF, optimistic). Fit on all 1427, scored once on the 229 spent validation clips (5 sources): balanced accuracy 0.528, top-1 0.472. Not blind, not a final result; 75% NOT met. Baseline frozen384 scored 0.512 on the same clips.",
+ "use": "LABSPOTTER_HEAD_CONFIG=heads/candidate_c003_1427.json python3 chain/action_clip.py TAG clip.mp4  (default remains heads/active.json = frozen384)"
+}
