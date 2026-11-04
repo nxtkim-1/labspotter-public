@@ -1,30 +1,295 @@
-/* Dark palette. Keep media unchanged, use semantic foregrounds on every card. */
-html[data-theme=dark]{color-scheme:dark!important;background:#0c1220!important;color:#e6edf7!important}
-html[data-theme=dark] body,html[data-theme=dark] #root,html[data-theme=dark] #app{background:#0c1220!important;color:#e6edf7!important}
-html[data-theme=dark] #app,html[data-theme=dark]{--paper:#0c1220;--paper2:#151e2f;--surface:#151e2f;--ink:#e6edf7;--ink2:#c2cee0;--muted:#acbcd3;--faint:#99aac3;--line:#65758f;--hair:#344057;--accent:#82aaff;--blue:#82aaff;--btn:#e6edf7;color-scheme:dark!important}
-html[data-theme=dark] :is(.as-card,.as-stage,.as-guide,.as-row,.acct-card,.acct-strip,.acct-page,.lp-page,.lp-nav,#topbar,#rail,#tabbar,.panel,.index-card,.rev-summary,.rev-item,.rev-list,.tools-card,.bk,.bf,.as-pause,.as-curstep,.rev-live-empty){background:#151e2f!important;color:#e6edf7!important;border-color:#344057!important}
-html[data-theme=dark] :is(h1,h2,h3,b,strong,.brand,.as-curtext,.view-lede,.rev-sub,.rev-mid span,.as-quiet,.bk-note,.vc-hint,.lp-copy,.lp-mission,.acct-card p,label,summary,.as-link,.lp-signin,.clip-name,.label,.meta,.unval,.rev-note){color:#c2cee0!important}
-html[data-theme=dark] :is(h1,h2,h3,b,strong){color:#edf3fc!important}
-html[data-theme=dark] :is(input,textarea,select,.ctl,.rev-fbtn,.as-btn.alt,.bk-load,.as-input){background:#1d2a40!important;color:#e6edf7!important;border-color:#65758f!important}
-html[data-theme=dark] :is(.as-btn:not(.alt),.ctl.primary,.rev-fbtn.on){background:#2563db!important;color:#fff!important;border-color:#4c83ed!important}
-html[data-theme=dark] :is(.tab,.rail-item,.clip-name,.ledger-cap,.index-card button,.acct-strip button){color:#c2cee0!important}
-html[data-theme=dark] :is(.as-log,.as-details,.as-side,.as-note-notice,.tools-more){color:#c2cee0!important;border-color:#344057!important}
-html[data-theme=dark] .rev-filter,html[data-theme=dark] .view{background:#0c1220!important}
-html[data-theme=dark] .rev-meter{background:#344057!important}
-html[data-theme=dark] .as-note-notice{padding:16px;background:#1d2a40;border-radius:12px}
-html[data-theme=dark] :is(#rail nav,.bk-file,.bk-drop,.tools-more,.acct-outer,.acct-bg,.bk-run,.bk-go,.bf-more,.bf-card){background:#151e2f!important;color:#e6edf7!important;border-color:#65758f!important}
-html[data-theme=dark] #rail .rail-item{background:transparent!important;color:#c2cee0!important}
-html[data-theme=dark] #rail .rail-item.active{background:#2a3b58!important;color:#fff!important}
-html[data-theme=dark] :is(button.as-btn.alt,button.bk-load,button.ctl){background:#1d2a40!important;color:#e6edf7!important;border-color:#65758f!important}
-html[data-theme=dark] .acct-page:before{background:#0c1220!important}
-html[data-theme=dark] body:has(.acct-page){background:#0c1220!important}
-html[data-theme=dark] :is(.bk-result,.bf-panel,.bf-proto,.bk-upload,.bk-filebox,.bk-uploadrow,.run-wrap .tools-more,.bk-file,.bk-clip,.bk-pick){background:#151e2f!important;color:#e6edf7!important;border-color:#65758f!important}
-html[data-theme=dark] #app.is-assistant{--paper:#0c1220!important;--paper2:#151e2f!important;--surface:#151e2f!important;--ink:#e6edf7!important;--ink2:#c2cee0!important;--muted:#acbcd3!important;--hair:#344057!important;--accent:#82aaff!important}
-html[data-theme=dark] #app.is-assistant :is(.as-hero,.as-card,.as-stage,.as-start,.as-start-side,.as-start-primary,.as-choice){background:#151e2f!important;color:#e6edf7!important}
-html[data-theme=dark] #app.is-assistant :is(h1,h2,h3,p,span,summary,.as-link){color:#c2cee0!important;opacity:1!important}
-html[data-theme=dark] #app #rail{background:#151e2f!important}
-html[data-theme=dark] #app .run-wrap .bk-file{background:#151e2f!important}
-html[data-theme=dark] .acct-page button.as-btn.alt{background:#1d2a40!important;color:#e6edf7!important}
-html[data-theme=dark] #app .bk-row:has(input[type=file]){background:#1d2a40!important;border-color:#65758f!important}
-html[data-theme=dark] #app .bk-row:has(input[type=file])>span{color:#e6edf7!important}
-html[data-theme=dark] #app .bk-row input[type=file]::file-selector-button{background:#2a3b58!important;color:#e6edf7!important;border-color:#65758f!important}
+/* LabSpotter dark theme - a true dark counterpart of the light design, not a colour swap.
+   Charcoal surfaces, clear white hierarchy, card depth, restrained blue. Media is never recoloured.
+   Everything is scoped to html[data-theme=dark]; the light default is untouched. */
+
+/* ---------- tokens ---------- */
+html[data-theme=dark]{color-scheme:dark;
+ --paper:#101214;--paper2:#17191D;--surface:#1B1E23;
+ --ink:#F4F6F8;--ink2:#C7CCD3;--muted:#9AA1AA;--faint:#6E747D;
+ --line:rgba(255,255,255,.16);--hair:rgba(255,255,255,.09);
+ --accent:#3B73F0;--blue:#8FB3F9;--ok:#3FCB85;--bad:#E8735C;--btn:#2B63E8;
+ --green:#3FCB85;--amber:#ECB258}
+html[data-theme=dark] #app.is-assistant{color-scheme:dark;
+ --paper:#101214;--paper2:#17191D;--surface:#1B1E23;
+ --ink:#F4F6F8;--ink2:#C7CCD3;--muted:#9AA1AA;--faint:#6E747D;
+ --line:rgba(255,255,255,.16);--hair:rgba(255,255,255,.09);
+ --accent:#3B73F0;--blue:#8FB3F9;--ok:#3FCB85;--bad:#E8735C;--btn:#2B63E8;
+ --green:#3FCB85;--amber:#ECB258}
+html[data-theme=dark] #app :is(.clips-view,.rev-wrap,.run-wrap){
+ --faint:#6E747D;--amber:#ECB258;--vp-blue:#3B73F0;--vp-blue-ink:#9DBCFF;
+ --vp-edge:#454D57;--vp-card:#1B1E23;
+ --vp-shadow:0 1px 2px rgba(0,0,0,.55),0 12px 30px rgba(0,0,0,.4)}
+
+/* ---------- page shell ---------- */
+html[data-theme=dark],html[data-theme=dark] body{background:#101214;color:#F4F6F8}
+html[data-theme=dark]:has(#app.is-assistant),html[data-theme=dark] body:has(#app.is-assistant){background:#101214!important}
+html[data-theme=dark]:has(.acct-root),html[data-theme=dark] body:has(.acct-root){background:#101214!important}
+html[data-theme=dark] #root,html[data-theme=dark] #app{background:#101214;color:#F4F6F8}
+/* horizontal header rail (desktop) */
+html[data-theme=dark] #app #rail{background:#14161A!important;color:#F4F6F8;border-bottom:1px solid rgba(255,255,255,.09)}
+html[data-theme=dark] #rail .rail-item{color:#9AA1AA}
+html[data-theme=dark] #rail .rail-item:hover{background:rgba(255,255,255,.06)}
+html[data-theme=dark] #rail .rail-item.active{background:#262B31;color:#F4F6F8}
+html[data-theme=dark] #rail .rail-item.active .tick{background:#3FCB85}
+/* vertical rail (mobile hides it; keep coherent if shown) */
+html[data-theme=dark] #app:not(.is-assistant) #rail{background:#14161A}
+/* bottom tab bar */
+html[data-theme=dark] .is-assistant #tabbar{background:rgba(16,18,20,.94)!important;border-top:1px solid rgba(255,255,255,.09)!important;backdrop-filter:blur(14px)}
+html[data-theme=dark] #tabbar{background:#101214;border-top:1px solid rgba(255,255,255,.09)}
+html[data-theme=dark] #topbar{border-bottom:1px solid rgba(255,255,255,.09)}
+html[data-theme=dark] .run-chip{color:#9AA1AA!important;border:1px solid rgba(255,255,255,.12)!important;background:transparent!important}
+
+/* ---------- shared building blocks ---------- */
+html[data-theme=dark] a{color:#8FB3F9}
+html[data-theme=dark] ::selection{background:rgba(59,115,240,.35)}
+html[data-theme=dark] details>summary{color:#C7CCD3}
+html[data-theme=dark] .mono{color:#9AA1AA}
+html[data-theme=dark] .view-head h1,html[data-theme=dark] .panel h2{color:#F4F6F8}
+html[data-theme=dark] .view-lede,html[data-theme=dark] .panel-sub{color:#C7CCD3}
+html[data-theme=dark] .group-label{color:#C7CCD3}
+html[data-theme=dark] .group-label::before{background:#3FCB85}
+html[data-theme=dark] .group-label::after{background:rgba(255,255,255,.09)}
+html[data-theme=dark] .tag{background:rgba(255,255,255,.07);color:#C7CCD3;border:none}
+html[data-theme=dark] #app :is(.clips-view,.rev-wrap) .tag.local{background:rgba(63,203,133,.13);color:#46D392}
+html[data-theme=dark] #app .tag.unval,html[data-theme=dark] .is-assistant .tag.unval{background:rgba(236,178,88,.14)!important;color:#F2C06A!important;border:none!important}
+html[data-theme=dark] .verdict{color:#C7CCD3!important;border-color:rgba(255,255,255,.16)!important;background:rgba(255,255,255,.05)}
+html[data-theme=dark] .verdict.ok{color:#46D392!important;border-color:rgba(63,203,133,.4)!important;background:rgba(63,203,133,.1)}
+html[data-theme=dark] .verdict.bad{color:#F2C06A!important;border-color:rgba(236,178,88,.4)!important;background:rgba(236,178,88,.08)}
+/* hovers that were pale blue in light mode */
+html[data-theme=dark] #app .clips-view .index-item:hover{background:#23262C}
+html[data-theme=dark] #app .clips-view .legend-item:hover,html[data-theme=dark] #app .clips-view .legend-item.active{background:#23262C}
+html[data-theme=dark] #app :is(.clips-view,.rev-wrap) .ctl:hover{background:#23262C}
+html[data-theme=dark] #app .run-wrap .tools-card .bk-example:hover{background:#23262C!important}
+/* selected clip in the index: raised neutral, not a white pill */
+html[data-theme=dark] #app .clips-view .index-item.active{background:#262B31;border-color:rgba(255,255,255,.18);color:#F4F6F8;box-shadow:0 1px 2px rgba(0,0,0,.5)}
+html[data-theme=dark] #app .clips-view .index-item.active .idx-num{color:#9DBCFF}
+html[data-theme=dark] #app .clips-view .strip-item.active{background:#1B1E23;border-color:#3B73F0;box-shadow:0 0 0 1px #3B73F0}
+html[data-theme=dark] #app .clips-view .strip-item.active .strip-name{color:#F4F6F8}
+html[data-theme=dark] #app .clips-view .strip-name{color:#C7CCD3}
+/* meters, bars, tracks */
+html[data-theme=dark] .conf-bar,html[data-theme=dark] .bench-bar,html[data-theme=dark] .rev-meter,html[data-theme=dark] .bk-track{background:#2A2F36!important}
+html[data-theme=dark] .conf-bar i{background:#7A828C}
+html[data-theme=dark] .t3row.first .conf-bar i{background:#3B73F0}
+html[data-theme=dark] .bk-bar{background:#35B377}
+html[data-theme=dark] .bk-row.bk-prob:first-child .bk-bar{background:#E8EBEF}
+html[data-theme=dark] .bench-bar i{background:#3B73F0}
+html[data-theme=dark] .bench-bar em{background:#ECB258}
+html[data-theme=dark] .rev-meter i{background:#3B73F0}
+html[data-theme=dark] #app .clips-view .progress{background:#2A2F36}
+html[data-theme=dark] #app .clips-view .progress i{background:#3B73F0!important}
+/* inputs */
+html[data-theme=dark] #app :is(input,textarea,select),
+html[data-theme=dark] .bk-row input,html[data-theme=dark] .bf-noterow input,html[data-theme=dark] .bf-noterow select,html[data-theme=dark] .bf-proto{
+ background:#21252A;border:1px solid rgba(255,255,255,.16);color:#F4F6F8}
+html[data-theme=dark] .bk-row input:focus,html[data-theme=dark] .bf-noterow input:focus,html[data-theme=dark] .bf-noterow select:focus,html[data-theme=dark] .bf-proto:focus{
+ border-color:#3B73F0;box-shadow:0 0 0 3px rgba(59,115,240,.25)}
+html[data-theme=dark] .bf-noterow select{background:#21252A url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23C7CCD3' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 12px center}
+html[data-theme=dark] input::placeholder,html[data-theme=dark] textarea::placeholder{color:#6E747D}
+/* file drop zone */
+html[data-theme=dark] #app .bk .bk-row:has(input[type=file]),html[data-theme=dark] .bk .bk-row:has(input[type=file]){
+ background:rgba(255,255,255,.02)!important;border:1.5px dashed rgba(255,255,255,.22)!important}
+html[data-theme=dark] .bk .bk-row:has(input[type=file])>span:first-child{color:#F4F6F8}
+html[data-theme=dark] input[type=file]::file-selector-button{
+ background:#292E34;border:1px solid rgba(255,255,255,.18);color:#F4F6F8;border-radius:999px;padding:8px 16px;font:600 13px Inter,sans-serif;cursor:pointer;margin-right:10px}
+/* secondary buttons */
+html[data-theme=dark] .bk-load,html[data-theme=dark] .bk-hist-open{
+ background:transparent;border:1px solid rgba(255,255,255,.2);color:#F4F6F8}
+html[data-theme=dark] .bk-hist-x{color:#6E747D}
+html[data-theme=dark] .bk-hist-x:hover{color:#8FB3F9}
+/* primary upload button: brand blue, never a white slab */
+html[data-theme=dark] #app .bk-upload{background:#2B63E8;color:#fff}
+html[data-theme=dark] #app .bk-upload:hover{background:#3B73F0}
+html[data-theme=dark] #app .bk-upload.disabled,html[data-theme=dark] .is-assistant .bk-upload.disabled{
+ background:#23262C!important;color:#6E747D!important;border:1px solid rgba(255,255,255,.08)!important;box-shadow:none!important;cursor:default}
+html[data-theme=dark] #app .run-wrap .tools-card .bk-upload:not(.disabled):not(.bk-example){background:#2B63E8;box-shadow:0 4px 14px rgba(43,99,232,.3)}
+html[data-theme=dark] #app .run-wrap .tools-card .bk-upload:not(.disabled):not(.bk-example):hover{background:#3B73F0}
+html[data-theme=dark] #app .run-wrap .tools-card .bk-example{background:#1B1E23!important;color:#9DBCFF!important;border:1px solid #454D57!important}
+/* labels and helper text that were hard-coded dark grey */
+html[data-theme=dark] .bk-row>span:first-child,html[data-theme=dark] .bf-status,
+html[data-theme=dark] .bk-pred-head span,html[data-theme=dark] .bk-hist-label,
+html[data-theme=dark] .bk-conn>summary,html[data-theme=dark] .bk-dev summary,
+html[data-theme=dark] .attrib,html[data-theme=dark] .bf-tech,html[data-theme=dark] .bf-tech summary,html[data-theme=dark] .bf-when{color:#9AA1AA!important}
+html[data-theme=dark] .bk-row b,html[data-theme=dark] .bf-log-h,html[data-theme=dark] .bk-row.bk-prob>span:first-child{color:#C7CCD3}
+html[data-theme=dark] .bk-pred-head b,html[data-theme=dark] .bf-title{color:#F4F6F8!important}
+html[data-theme=dark] .ledger-num{color:#F4F6F8!important}
+html[data-theme=dark] .ledger-cap{color:#C7CCD3}
+html[data-theme=dark] .idx-mark{border-color:#C7CCD3;color:#C7CCD3}
+/* status chips */
+html[data-theme=dark] #app .run-wrap .stt{background:#23262C!important;color:#C7CCD3}
+html[data-theme=dark] #app .run-wrap .stt.done{background:rgba(63,203,133,.13)!important;color:#46D392}
+html[data-theme=dark] #app .run-wrap .stt.wait{background:rgba(236,178,88,.15)!important;color:#F2C06A!important}
+/* errors and notes */
+html[data-theme=dark] .bk-error{border:1px solid rgba(236,178,88,.4);background:rgba(236,178,88,.08);color:#C7CCD3;border-radius:0 8px 8px 0;border-left:3px solid #ECB258}
+html[data-theme=dark] .bk-error b,html[data-theme=dark] .bk-err{color:#F2C06A}
+html[data-theme=dark] .upload-note{border:1px dashed rgba(255,255,255,.18);color:#9AA1AA}
+html[data-theme=dark] .upload-note .big{color:#F4F6F8}
+/* evidence + review details */
+html[data-theme=dark] .ev-claim{border-bottom-color:rgba(255,255,255,.09)}
+html[data-theme=dark] .ev-claim .cl,html[data-theme=dark] .ev-p{color:#C7CCD3}
+html[data-theme=dark] .ev-claim .cs{color:#F4F6F8}
+html[data-theme=dark] .ev-p .orange{color:#F2C06A}
+html[data-theme=dark] #app .rev-wrap .rev-live-empty{background:#1E2126;border:1px solid rgba(255,255,255,.1)!important;color:#C7CCD3}
+html[data-theme=dark] .rev-item{border-bottom-color:rgba(255,255,255,.09)}
+html[data-theme=dark] .rev-item img{border:none}
+html[data-theme=dark] .rev-mid b{color:#F4F6F8}
+html[data-theme=dark] .rev-mid span{color:#9AA1AA!important}
+html[data-theme=dark] .rev-note,html[data-theme=dark] .rev-live-empty{border-left:none;color:#9AA1AA}
+html[data-theme=dark] .rev-fbtn{background:#1B1E23;border:1px solid #454D57;color:#C7CCD3}
+html[data-theme=dark] .rev-fbtn:hover{border-color:#C7CCD3}
+html[data-theme=dark] .rev-fbtn.on,html[data-theme=dark] .rev-fbtn.on:hover{background:#E8EBEF!important;border-color:#E8EBEF!important;color:#101214!important}
+html[data-theme=dark] #app .rev-wrap .rev-filter{background:#101214}
+html[data-theme=dark] #app .rev-wrap .ctl.sm.flag.on,html[data-theme=dark] #app .rev-wrap .ctl.sm.flag.on:hover{background:#C2492F;border-color:#C2492F;color:#fff}
+html[data-theme=dark] .diag>summary{color:#9AA1AA}
+html[data-theme=dark] .diag>summary::before{color:#3B73F0}
+/* tools nested cards */
+html[data-theme=dark] #app .run-wrap .tools-more :is(.bench-card,.pipe,.kv){background:#20242A}
+html[data-theme=dark] .bench-card .v{color:#F4F6F8}
+html[data-theme=dark] .bench-card .v.warn{color:#ECB258}
+html[data-theme=dark] .bench-card .v.muted-v{color:#6E747D}
+html[data-theme=dark] .bench-card .k{color:#9AA1AA}
+html[data-theme=dark] .pstage .nm{color:#F4F6F8}
+html[data-theme=dark] .pstage .nm span{color:#9AA1AA}
+html[data-theme=dark] .kv .row span{color:#9AA1AA}
+html[data-theme=dark] .kv .row b{color:#C7CCD3}
+html[data-theme=dark] .pstage,html[data-theme=dark] .kv .row{border-bottom-color:rgba(255,255,255,.09)}
+/* BenchFreeze details */
+html[data-theme=dark] .bf-code{background:#14171B;border:1px solid rgba(255,255,255,.12);color:#C7CCD3}
+html[data-theme=dark] .bf-cp{background:#21252A;color:#C7CCD3;border:1px solid rgba(255,255,255,.09)}
+html[data-theme=dark] .bf-chip{background:rgba(236,178,88,.13);border-color:rgba(236,178,88,.4);color:#F2C06A}
+html[data-theme=dark] .bf-seg{background:rgba(255,255,255,.07)}
+html[data-theme=dark] .bf-seg button{color:#9AA1AA}
+html[data-theme=dark] .bf-seg button.on{background:#E8EBEF;color:#101214}
+html[data-theme=dark] .bf-agent{background:rgba(63,203,133,.09);border-left:3px solid #3FCB85;color:#C7CCD3}
+html[data-theme=dark] .bf-log li::before{background:#E8EBEF}
+html[data-theme=dark] .bf-log li::after{background:rgba(255,255,255,.15)}
+html[data-theme=dark] .bf-saved li{border-color:rgba(255,255,255,.11);background:rgba(255,255,255,.03)}
+html[data-theme=dark] .bf-more,html[data-theme=dark] .bf-teach{border-top-color:rgba(255,255,255,.09)}
+html[data-theme=dark] .bf-link{color:#C7CCD3}
+html[data-theme=dark] .vc-hint{color:#9AA1AA}
+/* player: media untouched, frame only */
+html[data-theme=dark] #app .clips-view .player{background:#000;border:1px solid rgba(255,255,255,.1);box-shadow:0 1px 2px rgba(0,0,0,.55),0 12px 30px rgba(0,0,0,.4)}
+html[data-theme=dark] .lg-chip{border-color:#2DD4BF}
+html[data-theme=dark] .lg-chip.obj{border-color:#ECB258}
+
+/* ---------- assistant view ---------- */
+html[data-theme=dark] #app.is-assistant .as-card{
+ background:#1B1E23;border:1px solid rgba(255,255,255,.09);
+ box-shadow:0 1px 2px rgba(0,0,0,.55),0 12px 30px rgba(0,0,0,.4)}
+/* the hero stays free of panels: no rectangular text patches */
+html[data-theme=dark] #app.is-assistant .as-hero{background:transparent}
+html[data-theme=dark] #app.is-assistant .as-hero h1,html[data-theme=dark] #app.is-assistant .as-card h1{color:#F4F6F8}
+html[data-theme=dark] #app.is-assistant .as-hero>p{color:#C7CCD3}
+/* camera stage: a calm dark stage with one blue point of focus */
+html[data-theme=dark] #app.is-assistant .as-stage{
+ background:radial-gradient(120% 90% at 30% 20%,#1E2126 0%,#171A1E 55%,#14171B 100%);
+ border:1px solid rgba(255,255,255,.09)}
+html[data-theme=dark] #app.is-assistant .as-stage-lens{
+ background:radial-gradient(circle,#3B73F0 0 14px,#262B31 15px 24px,#3D434C 25px 26px,transparent 27px),#262B31;
+ box-shadow:0 10px 30px rgba(59,115,240,.22),inset 0 0 0 1px rgba(255,255,255,.09)}
+html[data-theme=dark] #app.is-assistant .as-stage-cap{color:#9AA1AA}
+/* buttons */
+html[data-theme=dark] #app.is-assistant .as-btn{background:#2B63E8!important;border-color:#2B63E8;color:#fff!important}
+html[data-theme=dark] #app.is-assistant .as-btn:hover{background:#3B73F0!important;border-color:#3B73F0}
+html[data-theme=dark] #app.is-assistant .as-btn.big{box-shadow:0 6px 18px rgba(43,99,232,.32)}
+html[data-theme=dark] #app.is-assistant .as-btn.alt{background:#21252A!important;color:#E9ECF0!important;border-color:rgba(255,255,255,.16)}
+html[data-theme=dark] #app.is-assistant .as-btn.alt:hover{background:#292E34!important;border-color:rgba(255,255,255,.24)}
+html[data-theme=dark] .is-assistant button:disabled,html[data-theme=dark] .is-assistant button[disabled]{
+ background:#23262C!important;color:#6E747D!important;border:1px solid rgba(255,255,255,.08)!important;box-shadow:none!important;opacity:1!important}
+html[data-theme=dark] #app.is-assistant .as-chip{background:transparent;border-color:rgba(255,255,255,.16);color:#F4F6F8}
+html[data-theme=dark] #app.is-assistant .as-chip:hover{background:#23262C}
+html[data-theme=dark] #app.is-assistant .as-chip.quiet{color:#9AA1AA;border-color:rgba(255,255,255,.09)}
+html[data-theme=dark] #app.is-assistant .as-input{background:#21252A;border-color:rgba(255,255,255,.16);color:#F4F6F8}
+html[data-theme=dark] #app.is-assistant .as-input::placeholder{color:#6E747D}
+html[data-theme=dark] #app.is-assistant .as-link{color:#8FB3F9}
+html[data-theme=dark] .is-assistant .as-upnext-m .as-btn,html[data-theme=dark] .is-assistant .as-curstep .as-btn{
+ background:#2B63E8!important;color:#fff!important;box-shadow:0 6px 16px rgba(43,99,232,.3)!important}
+html[data-theme=dark] .is-assistant .as-result .as-actions .as-btn.big{
+ background:#21252A!important;color:#9DBCFF!important;border:1.5px solid rgba(157,188,255,.45)!important;box-shadow:none!important}
+/* rows, steps, recents */
+html[data-theme=dark] #app.is-assistant .as-row{background:#1B1E23;border-color:rgba(255,255,255,.09);color:#F4F6F8}
+html[data-theme=dark] #app.is-assistant .as-row:hover{border-color:rgba(255,255,255,.22)}
+html[data-theme=dark] #app.is-assistant .as-row i{color:#9AA1AA}
+html[data-theme=dark] #app.is-assistant .as-row em{color:#8FB3F9}
+html[data-theme=dark] #app.is-assistant .as-recent h2{color:#F4F6F8}
+html[data-theme=dark] #app.is-assistant .as-steps li{border-bottom-color:rgba(255,255,255,.09);color:#F4F6F8}
+html[data-theme=dark] #app.is-assistant .as-steps li::before{border-color:#3D434C}
+html[data-theme=dark] #app.is-assistant .as-steps li.is-done::before{background:#3FCB85;border-color:#3FCB85}
+html[data-theme=dark] #app.is-assistant .as-done{color:#3FCB85!important}
+html[data-theme=dark] #app.is-assistant .as-details{border-top-color:rgba(255,255,255,.09)}
+html[data-theme=dark] #app.is-assistant .as-details summary{color:#C7CCD3}
+html[data-theme=dark] #app.is-assistant .as-log{color:#C7CCD3}
+html[data-theme=dark] #app.is-assistant .as-quiet{color:#9AA1AA!important}
+html[data-theme=dark] #app.is-assistant .as-kicker{color:#9AA1AA}
+html[data-theme=dark] #app.is-assistant .as-label{color:#F4F6F8}
+html[data-theme=dark] #app.is-assistant .as-card h2{color:#F4F6F8}
+html[data-theme=dark] #app.is-assistant .as-card p{color:#C7CCD3}
+/* current-step and up-next blocks */
+html[data-theme=dark] #app.is-assistant .as-curstep,html[data-theme=dark] #app.is-assistant .as-upnext-m{background:#21252A}
+html[data-theme=dark] #app.is-assistant .as-curstep .as-curtext{color:#F4F6F8}
+html[data-theme=dark] #app.is-assistant .as-upnext-m span{color:#9AA1AA}
+html[data-theme=dark] #app.is-assistant .as-upnext-m b{color:#F4F6F8}
+html[data-theme=dark] #app.is-assistant .as-now-kicker{color:#9AA1AA}
+html[data-theme=dark] #app.is-assistant .as-card .as-now-step{color:#F4F6F8}
+html[data-theme=dark] #app.is-assistant .as-dots i{background:#2A2F36}
+html[data-theme=dark] #app.is-assistant .as-dots i.on{background:#3B73F0}
+html[data-theme=dark] #app.is-assistant .as-dots i.cur{background:#6E93EE}
+html[data-theme=dark] #app.is-assistant .as-prog{color:#9AA1AA!important}
+html[data-theme=dark] #app.is-assistant .as-more summary{color:#8FB3F9}
+html[data-theme=dark] #app.is-assistant .as-recap-list{color:#F4F6F8}
+/* Meta recap card: a quiet blue wash on charcoal */
+html[data-theme=dark] #app.is-assistant .as-ai.meta{
+ background:linear-gradient(180deg,rgba(59,115,240,.14) 0%,#1B1E23 78%);
+ border:1px solid rgba(111,149,240,.3);box-shadow:0 10px 30px rgba(0,0,0,.4)}
+html[data-theme=dark] #app.is-assistant .as-ai.plain{background:#21252A;border-color:rgba(255,255,255,.09)}
+html[data-theme=dark] #app.is-assistant .as-ai-kicker{color:#A9C4FF!important;background:rgba(111,149,240,.16)}
+html[data-theme=dark] #app.is-assistant .as-ai.plain .as-ai-kicker{color:#C7CCD3!important;background:#292E34}
+html[data-theme=dark] #app.is-assistant .as-ai .as-recap{color:#F4F6F8!important}
+html[data-theme=dark] #app.is-assistant .as-powered{border-top-color:rgba(255,255,255,.09);color:#9AA1AA!important}
+/* states */
+html[data-theme=dark] #app.is-assistant .as-err{border-color:rgba(232,115,92,.4);background:rgba(232,115,92,.08)}
+html[data-theme=dark] #app.is-assistant .as-err p{color:#F2A79A}
+html[data-theme=dark] #app.is-assistant .as-spin{border-color:#2A2F36;border-top-color:#3B73F0}
+html[data-theme=dark] #app.is-assistant .as-fab-pause{background:#21252A;border-color:rgba(255,255,255,.16);color:#9DBCFF;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+html[data-theme=dark] .as-pause-focus{background:#101214}
+html[data-theme=dark] #app.is-assistant .as-video{background:#0A0C0E}
+/* focus rings stay blue */
+html[data-theme=dark] #app.is-assistant :is(.as-btn,.as-chip,.as-link,.as-row,.as-input,.as-details summary):focus-visible{outline:3px solid #3B73F0;outline-offset:2px}
+
+/* ---------- account pages ---------- */
+html[data-theme=dark] .acct-root{background:#101214;color:#F4F6F8}
+html[data-theme=dark] .acct-page{color:#F4F6F8}
+html[data-theme=dark] .acct-root h1,html[data-theme=dark] .acct-root h2,html[data-theme=dark] .acct-hero h1,html[data-theme=dark] .acct-h{color:#F4F6F8}
+html[data-theme=dark] .acct-tag,html[data-theme=dark] .acct-card p,html[data-theme=dark] .acct-card li,html[data-theme=dark] .acct-root .acct-tag{color:#C7CCD3}
+html[data-theme=dark] .acct-card{background:#1B1E23;border:1px solid rgba(255,255,255,.09)}
+html[data-theme=dark] .acct-card h2{color:#F4F6F8}
+html[data-theme=dark] .acct-form label{color:#C7CCD3}
+html[data-theme=dark] .acct-form input,html[data-theme=dark] .acct-root .acct-form input{background:#21252A;color:#F4F6F8;border:1px solid rgba(255,255,255,.18)}
+html[data-theme=dark] .acct-form select{background:#21252A;color:#F4F6F8;border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px 12px;min-height:44px}
+html[data-theme=dark] .acct-hint,html[data-theme=dark] .acct-foot{color:#9AA1AA}
+html[data-theme=dark] .acct-err{color:#F2A79A}
+html[data-theme=dark] .acct-ok{color:#46D392}
+html[data-theme=dark] .acct-danger{color:#F2A79A!important;border-color:rgba(232,115,92,.5)!important}
+html[data-theme=dark] .acct-strip{background:#14161A;border-bottom:1px solid rgba(255,255,255,.09);color:#C7CCD3}
+html[data-theme=dark] .acct-root .as-link,html[data-theme=dark] .acct-strip .as-link{color:#9DBCFF}
+/* the landing page is already a designed dark page; leave it alone */
+
+/* Hosted Home and account controls use the same charcoal system. */
+html[data-theme=dark] .acct-root .as-btn{background:#2B63E8!important;color:#fff!important;border-color:#3B73F0!important}
+html[data-theme=dark] .acct-root .as-btn.alt{background:#21252A!important;color:#F4F6F8!important;border:1px solid #454D57!important}
+html[data-theme=dark] .acct-root .as-btn.acct-danger{background:#21252A;color:#F2A79A!important}
+html[data-theme=dark] .acct-page select{background:#21252A;color:#F4F6F8;border:1px solid #454D57;border-radius:10px;padding:10px 12px;min-height:44px}
+html[data-theme=dark] .lp-dark{background:radial-gradient(900px 500px at 80% -20%,rgba(59,115,240,.10),transparent 65%),#14161A}
+html[data-theme=dark] .lp-logo i{background:#3B73F0}
+html[data-theme=dark] .lp-hero p,html[data-theme=dark] .lp-foot{color:#C7CCD3}
+html[data-theme=dark] .lp-eyebrow{color:#9DBCFF}
+html[data-theme=dark] :is(.lp-step,.lp-prin,.lp-preview){background:#1B1E23;color:#F4F6F8;border:1px solid rgba(255,255,255,.09)}
+html[data-theme=dark] :is(.lp-step h3,.lp-prin h3){color:#F4F6F8}
+html[data-theme=dark] :is(.lp-step p,.lp-prin p){color:#C7CCD3}
+html[data-theme=dark] .lp-prin{border-top:3px solid #454D57}
+html[data-theme=dark] .lp-band{background:#1B1E23;border:1px solid rgba(255,255,255,.09)}
+html[data-theme=dark] .lp-pv-step{color:#F4F6F8!important}
+html[data-theme=dark] :is(.lp-pv-top,.lp-pv-cap){color:#9AA1AA}
+html[data-theme=dark] .lp-pv-sug{background:#182A25;color:#A5DCC4;border-color:#31594A}
+html[data-theme=dark] .lp-pv-sug small{color:#9BC8B5}
+html[data-theme=dark] :is(.lp-pv-pause,.lp-pv-btn.alt){background:#262B31;color:#9DBCFF;border-color:#454D57}
+html[data-theme=dark] .lp-pv-bar{background:#343A42}
