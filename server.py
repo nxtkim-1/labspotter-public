@@ -242,7 +242,7 @@ def auth_route(h, method, p):
         sys.stderr.write("auth route failed: " + type(e).__name__ + "\n"); return send(h, 500, {"error": "account request failed"}, ao=ao)
 def hosted_block(h, p):
     """In hosted mode only health, accounts, BenchFreeze notes and the signed-in user's own runs/analysis exist under /api/ (voice and agent routes, which can reach Meta, answer 403)."""
-    if HOSTED and p.startswith("/api/") and not (p == "/api/health" or p.startswith("/api/auth/") or p.startswith("/api/bench/") or p.startswith("/api/runs") or p == "/api/analyze" or p == "/api/detections"):
+    if HOSTED and p.startswith("/api/") and not (p == "/api/health" or p.startswith("/api/auth/") or p.startswith("/api/bench/") or p.startswith("/api/runs") or p == "/api/analyze" or p == "/api/detections" or (p == "/api/voice/transcribe" and os.environ.get("LABSPOTTER_VOICE_CLEARED") == "1" and INVITE)):
         ao = gate(h, False)
         if ao is None: return True
         send(h, 403, {"error": "not available on the hosted site (voice and agent routes are switched off)"}, ao=ao); return True
@@ -386,12 +386,24 @@ class H(BaseHTTPRequestHandler):
         if self.path.split("?")[0] == "/api/voice/transcribe":
             ao = gate(self, True)
             if ao is None: return
+            if not self.headers.get("Origin"): return send(self, 403, {"error": "Origin is required for voice notes."}, ao=ao)
             import voice_gate as V
             try: n = int(self.headers.get("Content-Length", 0))
             except (TypeError, ValueError): return send(self, 400, {"error": "missing or malformed Content-Length"}, ao=ao)
             if n <= 0 or n > V.MAX_BYTES: return send(self, 400, {"error": "send one short WAV clip as the body (<= 1 MB)"}, ao=ao)
             if not V.status()[0]: return send(self, 503, {"error": "voice_unavailable", "message": V.status()[1]}, ao=ao)
-            code, out = V.transcribe(self.rfile.read(n))
+            if os.environ.get("LABSPOTTER_VOICE_CLEARED") == "1":
+                u = session_user(self)
+                if not u: return send(self, 401, {"error": "Sign in to use voice notes."}, ao=ao)
+                if not INVITE: return send(self, 403, {"error": "Voice notes require invite-only accounts."}, ao=ao)
+                try:
+                    self.connection.settimeout(10)
+                    audio = self.rfile.read(n)
+                    if len(audio) != n: return send(self, 400, {"error": "Incomplete audio upload."}, ao=ao)
+                except (socket.timeout, TimeoutError): return send(self, 408, {"error": "Audio upload timed out."}, ao=ao)
+                finally: self.connection.settimeout(None)
+                code, out = V.transcribe(audio, account=u["id"], allowance_root=_RUNS_ROOT)
+            else: code, out = V.transcribe(self.rfile.read(n))
             if code == 200: out["intent"] = V.intent(out["transcript"])
             return send(self, code, out, ao=ao)
         if not self.path.startswith("/api/analyze"): return send(self, 404, {"error": "not found"})

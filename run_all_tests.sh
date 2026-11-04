@@ -11,6 +11,8 @@
 set -u
 cd "$(dirname "$0")"
 UNIT_OK=1; GUIU_OK=1; GUI_OK=1
+python3 -m unittest discover -s tests -p "test_voice*.py" || UNIT_OK=0
+python3 -m unittest discover -s tests -p "test_hosted_voice.py" || UNIT_OK=0
 python3 - <<'PY' || UNIT_OK=0
 import os,sys,types
 sys.path.insert(0,"chain")

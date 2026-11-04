@@ -63,7 +63,7 @@ def add_claim(runs, sid, tag):
         finally: s.close()
     return {"session_id": sid, "checkpoint": _summary(sealed), **LABELS}
 
-NOTE_KINDS = {"observation": "OBSERVATION typed by the user (unverified)", "question": "QUESTION typed by the user",
+NOTE_KINDS = {"spoken_observation": "OBSERVATION spoken by the user, transcribed by Meta and saved by the user (unconfirmed)", "observation": "OBSERVATION typed by the user (unverified)", "question": "QUESTION typed by the user",
               "protocol_loaded": "PROTOCOL loaded by the user (not a validated lab procedure)",
               "label_agreed": "LABEL AGREED by the user (their own tap): the user agrees the clip shows the action named below. This is about the observed action only; it does not say any protocol step was done and the classifier did not verify it",
               "label_corrected": "LABEL CORRECTED by the user (their own tap): the user says the clip shows a different action than the model suggested. The model suggestion stays in the record and is not overwritten; this is not a protocol step and the classifier did not verify it",
@@ -87,7 +87,7 @@ def add_note(runs, sid, kind, text):
                 "id": f"{sid}-c{n:03d}", "run_id": sid, "parent_id": None, "branch": "main", "step": n,
                 "status": "unconfirmed", "tubes": [], "speaker": "user", "t": time.time(), "prev_hash": None, "hash": None,
                 "notes": [{"t": 0.0, "text": NOTE_KINDS[kind] + ": " + text, "tube": None, "speaker": "user", "contradicts_video": False}],
-                "evidence": [{"kind": "user_" + kind, "t": 0.0, "path": "typed"}]})
+                "evidence": [{"kind": "user_" + kind, "t": 0.0, "path": "meta_transcribed_user_saved" if kind == "spoken_observation" else "typed"}]})
             sealed = s.commit_checkpoint(cp)
         finally: s.close()
     return {"session_id": sid, "checkpoint": _summary(sealed), **LABELS}

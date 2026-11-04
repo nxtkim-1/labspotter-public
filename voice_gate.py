@@ -8,7 +8,7 @@ import io, json, math, os, struct, sys, threading, time, urllib.request, urllib.
 URL = "https://api.meta.ai/v1/asr/transcribe"
 MODEL = "muse-voice-transcribe-1.0"
 MAX_BYTES = 1_000_000            # 16 kHz mono 16-bit is 32 kB/s, so about 30 s
-MAX_SECONDS = 12.0
+MAX_SECONDS = 30.0
 PRICE_PER_HOUR = 0.18   # USD, billed per whole second of audio processed. https://dev.meta.ai/docs/pricing-rate-limits (read 2026-11-03)
 KEYWORDS = ["BenchFreeze", "LabSpotter", "freeze", "resume", "analyze", "save result", "start session"]
 try: MAX_CALLS = int(os.environ.get("LABSPOTTER_VOICE_MAX_CALLS", "40"))
@@ -17,7 +17,7 @@ _LOCK = threading.Lock(); _CALLS = 0
 
 def status():
     """(available, reason). reason is safe to show the user."""
-    if os.environ.get("LABSPOTTER_LIVE_CLEARED") != "1": return False, "Voice needs the live Meta API, which is not switched on for this launch."
+    if os.environ.get("LABSPOTTER_LIVE_CLEARED") != "1" and os.environ.get("LABSPOTTER_VOICE_CLEARED") != "1": return False, "Voice needs the live Meta API, which is not switched on for this launch."
     if not os.environ.get("MODEL_API_KEY"): return False, "Voice needs a Meta API key in this launch's environment."
     return True, "ready"
 
@@ -33,9 +33,11 @@ def wav_info(b):
     if not fmt or data is None: raise ValueError("WAV is missing fmt or data")
     tag, ch, rate, byterate, _, bits = fmt
     if tag != 1 or bits != 16 or ch != 1: raise ValueError("WAV must be 16-bit PCM mono")
+    if rate != 16000 or byterate != 32000 or fmt[4] != 2: raise ValueError("WAV must be 16 kHz PCM mono with a valid byte rate")
+    if data <= 0 or data % 2: raise ValueError("Empty or incomplete WAV audio")
     return data / float(byterate), rate, ch, bits
 
-def transcribe(wav):
+def transcribe(wav, account=None, allowance_root=None):
     """Returns (http_code, json_obj). Never raises; never includes the key."""
     global _CALLS
     ok, why = status()
@@ -44,6 +46,13 @@ def transcribe(wav):
     try: secs, rate, _, _ = wav_info(wav)
     except ValueError as e: return 400, {"error": str(e)}
     if secs > MAX_SECONDS: return 400, {"error": "clip longer than %d s" % MAX_SECONDS}
+    if os.environ.get("LABSPOTTER_VOICE_CLEARED") == "1":
+        try:
+            import voice_allowance
+            with voice_allowance.reserve(allowance_root or os.environ.get("LABSPOTTER_RUNS", "runs"), account, secs):
+                return upstream(wav, secs)
+        except PermissionError as e: return 429, {"error": str(e)}
+        except Exception: return 503, {"error": "Voice allowance could not be checked."}
     # Same fail-closed guard as chain/agent_entry.py, but RESERVE-BEFORE-CALL: the pessimistic clip cost is appended to the
     # shared ledger under a cross-process lock before the upstream request, so a lost response, timeout or crash is still counted.
     # Check+reserve is atomic (flock on the ledger) so concurrent voice/agent requests share one cap.
@@ -63,6 +72,9 @@ def transcribe(wav):
     with _LOCK:
         if _CALLS >= MAX_CALLS: return 429, {"error": "voice call cap for this launch reached"}
         _CALLS += 1
+    return upstream(wav, secs)
+
+def upstream(wav, secs):
     bnd = uuid.uuid4().hex
     req_json = json.dumps({"model": MODEL, "audioEncoding": "WAV", "mode": "PUSH_TO_TALK", "keywords": KEYWORDS, "languageBias": ["English"]})
     body = (("--%s\r\nContent-Disposition: form-data; name=\"request\"\r\nContent-Type: application/json\r\n\r\n%s\r\n" % (bnd, req_json)).encode()
