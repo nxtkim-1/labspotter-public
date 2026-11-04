@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { apiEndpoint, getHealth, Health, analyzeClip, benchCreate, benchClaim, benchLabel, benchNote, benchFreeze, benchContinue, benchInfo, benchList, BenchSessionRow, BenchCp, agentCoach, agentGlimpse, setSessionToken, needsManualToken, getOrganization } from './backend';
 import { SpeakNote } from './VoiceControl';
-import { predictionRows, classLabel } from './probs';
+import { predictionRows, classLabel, savedClaimLabel } from './probs';
 import { openCamera, createSegmentRecorder, speakRecap, stopStream, SegmentRecorder, Segment } from './liveCapture';
 
 // The everyday flow: add a video (file or phone camera), see the suggestion, agree or change it, add a note.
@@ -43,7 +43,7 @@ function restoreGuide(list: BenchCp[]): { guide: Guide | null; done: number[] } 
 function describe(cps: BenchCp[]): string[] {
     return cps.map(c => {
         const k = kindOf(c), t = c.notes[0] || '';
-        if (k === 'clip_run') { const m = /claim: ([^ ]+)/.exec(t); return 'App suggestion: ' + (m ? classLabel(m[1]) : 'a video action') + ' (not confirmed)'; }
+        if (k === 'clip_run') { return 'App suggestion: ' + savedClaimLabel(t) + ' (not confirmed)'; }
         if (k === 'user_label_agreed') return 'You agreed with the suggestion';
         if (k === 'user_label_corrected') { const m = /user label (\S+)/.exec(t); return 'You changed it to ' + (m ? classLabel(m[1]) : 'another action'); }
         if (k === 'user_spoken_observation') return 'Your spoken note (Meta transcript, saved by you): ' + afterColon(t);
@@ -213,10 +213,10 @@ export function Assistant({ onTools }: { onTools: () => void }) {
         setErr(''); setLiveMsg(''); setSkipped(0);
         const c = await openCamera({});
         liveStarting.current = false;
-        if (!c.ok) { setLiveMsg(c.message); return; }
+        if (c.ok === false) { setLiveMsg(c.message); return; }
         camStream.current = c.stream;
-        const r = createSegmentRecorder(c.stream, { segmentMs: 5000, onSegment: () => { if (liveOn.current) { pump(); return; } const sg = recRef2.current && recRef2.current.take(); if (sg) { heldSeg.current = sg; setHasHeld(true); } }, onDrop: () => setSkipped(n => n + 1) });
-        if (!r.ok) { stopStream(c.stream); setLiveMsg(r.message); return; }
+        const r = createSegmentRecorder(c.stream, { segmentMs: 5000, onSegment: () => { if (liveOn.current) { pump(); return; } const sg = recRef2.current && recRef2.current.take(); if (sg) { heldSeg.current = sg; setHasHeld(true); } }, onDrop: () => setSkipped(n => n + 1), onError: message => { setLiveMsg(message + " Try again, or add a recorded video."); stopLive(); } });
+        if (r.ok === false) { stopStream(c.stream); setLiveMsg(r.message); return; }
         recRef2.current = r.recorder; heldSeg.current = null; setHasHeld(false);
         rec.current = r.recorder; liveOn.current = true; setLive(true); setPaused(false); setRecap('');
         setTimeout(() => { if (vid.current) { vid.current.srcObject = c.stream; vid.current.play().catch(() => { /* needs a tap */ }); } r.recorder.start(); }, 50);
@@ -241,18 +241,18 @@ export function Assistant({ onTools }: { onTools: () => void }) {
         <div className="as-main">
         {!started && !busy && !live && <div className="as-hero">
             <h1>What are you working on?</h1>
-            {ready ? <p>Go live with your camera or add a short video. LabSpotter says what it thinks it sees, you decide if it is right. Notes and steps you confirm are saved as you go.</p> : <p>Follow a written guide, tick each step yourself and keep notes. Notes and steps you confirm are saved as you go.</p>}
+            {ready ? <p>Go live with your phone or computer camera, or add a short video. LabSpotter says what it thinks it sees, you decide if it is right. Notes and steps you confirm are saved as you go.</p> : <p>Follow a written guide, tick each step yourself and keep notes. Notes and steps you confirm are saved as you go.</p>}
             {!ready && <div className="as-card"><h2>Video analysis isn't set up on this computer yet</h2><p className="as-quiet">You can still follow a written guide with notes, pause and save your place, or look at the example clips.</p><div className="as-actions"><button className="as-btn" onClick={() => { setGOpen(true); setTimeout(() => { const g = document.querySelector('.as-guide'); if (g && g.scrollIntoView) g.scrollIntoView({ block: 'start' }); }, 50); }}>Follow a written guide</button><button className="as-btn alt" onClick={onTools}>See the example clips</button></div></div>}
             {ready && <div className="as-stage">
                 <div className="as-stage-lens" aria-hidden="true" />
-                <p className="as-stage-cap">{secure ? 'Your camera view shows here' : 'Add a short video from this device'}</p>
+                <p className="as-stage-cap">{secure ? 'Your phone or computer camera view shows here' : 'Add a short video from this device'}</p>
                 {secure ? <button className="as-btn big" onClick={goLive}>Go live</button> : <button className="as-btn big" onClick={openPick}>Add a video</button>}
             </div>}
             <p className="as-quiet as-privacy">If Meta's AI is switched on for this launch, short clips and your notes are sent to Meta to write the quick look and the summary. While Meta's free credits are in use, Meta says content may be used for product improvement. Do not use private or sensitive footage.</p>
             {liveMsg && <p className="as-quiet">{liveMsg}</p>}
-            {!secure && <p className="as-quiet">Recording opens your phone's own camera app. A live camera view needs a secure link, which is not set up yet.</p>}
+            {!secure && <p className="as-quiet">Recording opens your phone's own camera app. Live camera mode needs an HTTPS link and camera permission. Plain HTTP phone links cannot open the live camera.</p>}
         </div>}
-        <input ref={pick} type="file" accept="video/mp4" hidden onChange={e => { addVideo(e.target.files && e.target.files[0]); e.target.value = ''; }} />
+        <input ref={pick} type="file" accept="video/*" hidden onChange={e => { addVideo(e.target.files && e.target.files[0]); e.target.value = ''; }} />
         <input ref={cam} type="file" accept="video/*" capture="environment" hidden onChange={e => { addVideo(e.target.files && e.target.files[0]); e.target.value = ''; }} />
 
         {live && <div className="as-card as-live"><video ref={vid} className="as-video" playsInline muted autoPlay />
