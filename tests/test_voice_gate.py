@@ -38,7 +38,7 @@ class T(unittest.TestCase):
         os.environ["LABSPOTTER_LIVE_CLEARED"] = "1"; os.environ["MODEL_API_KEY"] = "k"; ledger(self.d)
         with mock.patch("urllib.request.urlopen") as u:
             self.assertEqual(V.transcribe(b"junk")[0], 400)
-            self.assertEqual(V.transcribe(wav(13))[0], 400)
+            self.assertEqual(V.transcribe(wav(31))[0], 400)
             self.assertEqual(V.transcribe(wav(1, 16000, 2))[0], 400)
             u.assert_not_called()
     def test_cap(self):

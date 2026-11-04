@@ -18,3 +18,10 @@ def test_notes():
     assert q["checkpoint"]["notes"][0].startswith("QUESTION")
     print("notes ok")
 if __name__ == "__main__": test_notes()
+
+def test_spoken_note():
+    runs=tempfile.mkdtemp(prefix="ls_spoken_"); sid=B.create_session(runs,"spoken")["session_id"]
+    cp=B.add_note(runs,sid,"spoken_observation","Clear liquid")["checkpoint"]
+    assert cp["status"] == "unconfirmed"
+    assert cp["evidence"][0]["kind"] == "user_spoken_observation"
+    assert "transcribed by Meta" in cp["notes"][0]
