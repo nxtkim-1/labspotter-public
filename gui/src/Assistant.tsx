@@ -78,6 +78,7 @@ export function Assistant({ onTools }: { onTools: () => void }) {
     const [note, setNote] = useState('');
     const [spokenNote, setSpokenNote] = useState(false);
     const [log, setLog] = useState<string[]>([]);
+    const [savedEntries, setSavedEntries] = useState<BenchCp[]>([]);
     const [recent, setRecent] = useState<BenchSessionRow[]>([]);
     const [paused, setPaused] = useState(false);
     const [restored, setRestored] = useState(false);
@@ -117,7 +118,7 @@ export function Assistant({ onTools }: { onTools: () => void }) {
     useEffect(loadRecent, [authed, sid, paused]); // eslint-disable-line
     const connect = () => { if (!tok.trim()) return; setSessionToken(tok.trim(), ep); setTok(''); refresh(); };
     const run = async (label: string, f: () => Promise<void>) => { setBusy(label); setErr(''); try { await f(); } catch (e: any) { setErr(String(e && e.message ? e.message : e)); } setBusy(''); };
-    const refreshLog = async (s: string) => { const info = await benchInfo(ep, s); setLog(describe(info.checkpoints)); return info.checkpoints; };
+    const refreshLog = async (s: string) => { const info = await benchInfo(ep, s); setLog(describe(info.checkpoints)); setSavedEntries(info.checkpoints); return info.checkpoints; };
 
     const addVideo = (f: File | null | undefined) => {
         if (!f) return;
@@ -168,7 +169,7 @@ export function Assistant({ onTools }: { onTools: () => void }) {
         try { const r = await agentCoach(ep, s); const t = joinSentences([r.recap, ...(r.next_steps || [])]); if (t) { setRecap(t); setRecapFrom('meta'); } } catch { /* Meta recap is optional */ }
     });
     const cont = () => { setPaused(false); };
-    const fresh = () => { freeUrls(); setGuide(null); setGDone([]); setSid(''); setItems([]); setCur(-1); setLog([]); setPaused(false); setRecap(''); setErr(''); };
+    const fresh = () => { freeUrls(); setGuide(null); setGDone([]); setSid(''); setItems([]); setCur(-1); setLog([]); setSavedEntries([]); setPaused(false); setRecap(''); setErr(''); };
 
     const heldSeg = useRef<Segment | null>(null);
     const recRef2 = useRef<SegmentRecorder | null>(null);
@@ -196,7 +197,7 @@ export function Assistant({ onTools }: { onTools: () => void }) {
             await benchClaim(ep, s, tag);
             const item: Item = { tag, name: f.name, label: pr.rows[0].label, labels: pr.rows.map(x => x.label).sort(), decided: '', finalLabel: '', url: URL.createObjectURL(seg.blob), look };
             setItems(a => [...a, item]); setCur(itemsLen.current); itemsLen.current += 1; setChanging(false); setLastAt(seg.startedAt);
-            const info = await benchInfo(ep, s); setLog(describe(info.checkpoints));
+            const info = await benchInfo(ep, s); setLog(describe(info.checkpoints)); setSavedEntries(info.checkpoints);
         } catch (e: any) { { const m = String(e && e.message ? e.message : e); setLiveMsg(/busy/i.test(m) ? 'Still reading the last piece. It will try the next one in a moment.' : 'A moment could not be read: ' + m); } }
         working.current = false;
         if (!force) pump();
@@ -291,7 +292,7 @@ export function Assistant({ onTools }: { onTools: () => void }) {
                 {it.labels.filter(l => l !== it.label).map(l => <button key={l} className="as-chip" onClick={() => decide('corrected', l)}>{classLabel(l)}</button>)}
                 <button className="as-chip quiet" onClick={() => setChanging(false)}>Back</button></div>}
             {it.decided !== '' && <p className="as-done">{it.decided === 'agreed' ? 'You said this is right.' : 'You changed it to ' + classLabel(it.finalLabel) + '.'} Saved.</p>}
-            <div className="as-note"><input className="as-input" value={note} maxLength={500} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') addNote(); }} placeholder="Add a note about this" aria-label="Add a note" />
+            <div className="as-note"><textarea rows={2} className="as-input" value={note} maxLength={500} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) addNote(); }} placeholder="Add a note about this" aria-label="Add a note" />
                 <button className="as-btn alt" disabled={!note.trim()} onClick={addNote}>Save note</button></div>
             <SpeakNote ep={ep} voice={health.voice} onText={t => { setNote(t.slice(0, 500)); setSpokenNote(true); }} />
             <div className="as-actions">
@@ -306,7 +307,7 @@ export function Assistant({ onTools }: { onTools: () => void }) {
             <p className="as-now-step">{guide.steps[nowIdx]}</p>
             <div className="as-actions"><button className="as-btn big" onClick={() => tickStep(nowIdx)} title="Mark this step done">Correct</button>{ready && <button className="as-btn alt" onClick={() => pick.current && pick.current.click()}>Add a video</button>}</div>
             <p className="as-quiet">Tap Correct once you have done this step yourself. Only your tap marks a step.</p>
-            <div className="as-note"><input className="as-input" value={note} maxLength={500} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') addNote(); }} placeholder="Add a note" aria-label="Add a note" />
+            <div className="as-note"><textarea rows={2} className="as-input" value={note} maxLength={500} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) addNote(); }} placeholder="Add an observation or question" aria-label="Add a note" />
                 <button className="as-btn alt" disabled={!note.trim()} onClick={addNote}>Save note</button></div>
             <SpeakNote ep={ep} voice={health.voice} onText={t => { setNote(t.slice(0, 500)); setSpokenNote(true); }} />
         </div>}
@@ -340,15 +341,16 @@ export function Assistant({ onTools }: { onTools: () => void }) {
                 {!!it && <button className="as-btn alt as-pause-side" onClick={pause}>Pause and save my place</button>}
                 </div>}
             {sid && !it && <div className="as-session-actions">
-                {!mainNote && <div className="as-note"><input className="as-input" value={note} maxLength={500} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') addNote(); }} placeholder="Add a note" aria-label="Add a note" />
+                {!mainNote && <div className="as-note"><textarea rows={2} className="as-input" value={note} maxLength={500} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) addNote(); }} placeholder="Add an observation or question" aria-label="Add a note" />
                     <button className="as-btn alt" disabled={!note.trim()} onClick={addNote}>Save note</button></div>}
                 {!mainNote && <SpeakNote ep={ep} voice={health.voice} onText={t => { setNote(t.slice(0, 500)); setSpokenNote(true); }} />}
                 <div className="as-actions"><button className="as-btn" onClick={pause}>Pause and save my place</button></div></div>}
         </div>}
         {started && !busy && !paused && <button className="as-fab-pause" onClick={pause} aria-label="Pause and save my place">Pause</button>}
         {started && log.length > 0 && <details className="as-details"><summary>What's saved</summary>
-            <ul className="as-log">{log.map((l, i) => <li key={i}>{l}</li>)}</ul>
-            <button className="as-link" onClick={fresh}>Start something new</button></details>}
+            <p className="as-quiet">Your session keeps a timestamped record of your notes and taps. Times below are when each entry was saved, not when an event was verified.</p>
+            <ul className="as-log">{log.map((l, i) => <li key={i}><span>{l}</span>{savedEntries[i]?.t != null && <small style={{ display: 'block', marginTop: 4, opacity: .8 }}>Saved <time dateTime={new Date(savedEntries[i].t! * 1000).toISOString()}>{whenExact(savedEntries[i].t! * 1000)} (Toronto)</time></small>}</li>)}</ul>
+            <div className="as-actions"><button className="as-btn alt" onClick={() => { const blob = new Blob([JSON.stringify({ app: "LabSpotter", exported_at: new Date().toISOString(), timestamp_meaning: "Server save time, not verified event time", session_id: sid, entries: savedEntries }, null, 2)], { type: "application/json" }); const u = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = u; a.download = "labspotter-session-" + sid + ".json"; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1000); }}>Download session record</button><button className="as-link" onClick={fresh}>Start something new</button></div></details>}
 
         {!busy && !paused && recent.length > 0 && !(started && !paused && it) && <div className="as-recent"><h2>Recent</h2>
             {recent.slice(0, 6).map(r => <button key={r.session_id} className="as-row" onClick={() => resume(r.session_id)}>
@@ -356,4 +358,4 @@ export function Assistant({ onTools }: { onTools: () => void }) {
         <button className="as-link as-tools" onClick={onTools}>Tools and example clips</button>
         </div>
     </div>;
-}
+            }
