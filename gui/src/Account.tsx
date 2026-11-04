@@ -23,7 +23,7 @@ function Preview() {
 function Landing({ onGo, onApp, user }: { onGo: (m: 'login' | 'signup') => void; onApp?: () => void; user?: User }) {
     return <div className="acct-root lp">
         <div className="lp-dark">
-            <nav className="lp-nav"><span className="lp-logo"><i aria-hidden="true" />LabSpotter</span>
+            <nav className="lp-nav"><span className="lp-logo"><img src={import.meta.env.BASE_URL + 'brand/labspotter-mark-light.svg'} width={32} height={32} alt="LabSpotter logo" />LabSpotter</span>
                 <span className="lp-navr">{user ? <button className="as-btn" onClick={onApp}>Open the app</button> : <><button className="lp-signin" onClick={() => onGo('login')}>Sign in</button><button className="as-btn lp-nav-cta" onClick={() => onGo('signup')}>Create account</button></>}</span></nav>
             <header className="lp-hero"><div className="lp-hero-t">
                 <span className="lp-eyebrow">A second pair of eyes for the bench</span>
