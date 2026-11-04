@@ -34,6 +34,12 @@ def encoder():
         import torch
         from transformers import AutoVideoProcessor, AutoModelForVideoClassification
         dev = "cuda" if torch.cuda.is_available() else "cpu"
+        # Small CPU launches can become much slower from oversubscribed BLAS threads.
+        # Bound inference threads by default; operators can explicitly tune for their machine.
+        if dev == "cpu":
+            try: threads = max(1, min(32, int(os.environ.get("LABSPOTTER_CPU_THREADS", "2"))))
+            except ValueError: threads = 2
+            torch.set_num_threads(threads)
         _ENC.update(p=AutoVideoProcessor.from_pretrained(M, revision=REV), m=AutoModelForVideoClassification.from_pretrained(M, revision=REV).eval().to(dev), dev=dev)
     return _ENC
 def run_ffmpeg(args):
