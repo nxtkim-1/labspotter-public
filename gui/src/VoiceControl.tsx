@@ -65,6 +65,8 @@ export function SpeakNote({ ep, voice, onText }: { ep: string; voice?: { availab
     const [state, setState] = useState<'idle' | 'rec' | 'send'>('idle');
     const [err, setErr] = useState(''); const [done, setDone] = useState(false);
     const [notice, setNotice] = useState(false);
+    const [elapsed, setElapsed] = useState(0);
+    useEffect(() => { if (state !== 'rec') return; const started = Date.now(); setElapsed(0); const id = window.setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 250); return () => window.clearInterval(id); }, [state]);
     const rec = useRef<MediaRecorder | null>(null); const stopT = useRef<number>(0);
     useEffect(() => () => { window.clearTimeout(stopT.current); if (rec.current) { rec.current.onstop = null; rec.current.stream.getTracks().forEach(t => t.stop()); if (rec.current.state !== 'inactive') rec.current.stop(); } }, []);
     const avail = !!voice && voice.available;
@@ -86,8 +88,8 @@ export function SpeakNote({ ep, voice, onText }: { ep: string; voice?: { availab
     };
     return <div className="speak-note">
         <button className={'as-btn alt vc-mic' + (state === 'rec' ? ' rec' : '')} disabled={!avail || state === 'send'} onClick={state === 'rec' ? stop : start} aria-label="Speak a note">
-            {state === 'rec' ? 'Stop recording' : state === 'send' ? 'Writing it down...' : 'Speak a note'}</button>
-        <span className="as-quiet">{avail ? (done ? 'Review before saving.' : 'Speak a note, then review before saving. Up to 29 seconds.') : 'Voice notes are off here.'}</span>
+            {state === 'rec' ? 'Stop recording (' + elapsed + 's)' : state === 'send' ? 'Writing it down...' : 'Speak a note'}</button>
+        <span className="as-quiet" role="status">{state === 'rec' ? 'Recording your observation. Stop when you are done. Nothing is saved yet.' : state === 'send' ? 'Meta is writing your recording into an editable draft.' : avail ? (done ? 'Draft ready. Check the words, then tap Save note to add a timestamped entry.' : 'Speak a note, then review before saving. Up to 29 seconds.') : 'Voice notes are off here.'}</span>
         {notice && <div className="as-note-notice" role="dialog" aria-label="Before your first voice note"><p>Your audio is sent to Meta to write it down. With free credits, Meta may use it for product improvement. This app does not keep the audio.</p><button className="as-btn alt" onClick={() => { localStorage.setItem('labspotter_voice_notice_v1', 'yes'); setNotice(false); void start(); }}>Continue and record</button><button className="as-link" onClick={() => setNotice(false)}>Cancel</button></div>}
         {err && <span className="bk-error">{err}</span>}
     </div>;
