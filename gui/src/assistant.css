@@ -304,3 +304,8 @@ html:has(.acct-root),body:has(.acct-root){background:#F5F7FB!important}
 .ctl{min-height:40px;border-radius:9px!important;font-size:13px!important}
 .ctl.sm{min-height:36px;padding:0 12px!important}
 @media(max-width:820px){.projects-layout{gap:20px;padding-bottom:96px}.projects-layout>.as-card{padding:18px!important}.project-fields{grid-template-columns:1fr;gap:16px}.project-record{grid-column:auto;grid-row:auto;order:3}.project-toolbar{gap:12px}.project-toolbar label{min-width:0;flex:1}.project-export{white-space:nowrap;padding-inline:12px!important}.projects-layout .as-note{flex-direction:column;align-items:stretch}.projects-layout .as-note .as-input{min-width:0}.projects-layout .as-note .as-btn{align-self:flex-start}.project-session-actions .as-btn{width:auto!important}.as-note .as-btn.alt{width:auto!important}.view-head{margin-bottom:22px!important}}
+
+/* Landing example, v14: one centered suggestion line and clear example label. */
+.lp-pv-sug{display:flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+.lp-pv-sug>i{position:static;flex:0 0 auto;margin:0}
+.lp-meta{display:block;width:max-content;margin-top:12px;padding:6px 10px;border:1px solid rgba(153,246,228,.3);border-radius:6px;color:#99f6e4;font-size:12px;font-weight:600;letter-spacing:.02em}

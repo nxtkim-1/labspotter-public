@@ -11,12 +11,12 @@ const post = async (path: string, body: object) => {
 };
 
 function Preview() {
-    return <div className="lp-preview" role="img" aria-label="Illustration of the LabSpotter guide screen">
-        <div className="lp-pv-top"><span>STEP 2 OF 4</span><span className="lp-pv-pause">Pause</span></div>
+    return <div className="lp-preview" role="img" aria-label="Example of the LabSpotter guide screen">
+        <div className="lp-pv-top"><span>EXAMPLE · STEP 2 OF 4</span><span className="lp-pv-pause">Pause</span></div>
         <p className="lp-pv-step">Stir the solution gently for ten seconds.</p>
-        <div className="lp-pv-sug"><i />Clip looks like: stirring<small>Suggestion only, not confirmed</small></div>
+        <div className="lp-pv-sug"><i /><span>Clip looks like: stirring</span></div>
         <div className="lp-pv-row"><span className="lp-pv-btn">Correct</span><span className="lp-pv-btn alt">Add a video</span></div>
-        <div className="lp-pv-bar"><b style={{ width: '25%' }} /></div><small className="lp-pv-cap">1 of 4 done. Illustration.</small>
+        <div className="lp-pv-bar"><b style={{ width: '25%' }} /></div><small className="lp-pv-cap">1 of 4 done. Example screen.</small>
     </div>;
 }
 
@@ -26,7 +26,7 @@ function Landing({ onGo, onApp, user }: { onGo: (m: 'login' | 'signup') => void;
             <nav className="lp-nav"><span className="lp-logo"><img src={import.meta.env.BASE_URL + 'brand/labspotter-mark-light.svg'} width={32} height={32} alt="LabSpotter logo" />LabSpotter</span>
                 <span className="lp-navr">{user ? <button className="as-btn" onClick={onApp}>Open the app</button> : <><button className="lp-signin" onClick={() => onGo('login')}>Sign in</button><button className="as-btn lp-nav-cta" onClick={() => onGo('signup')}>Create account</button></>}</span></nav>
             <header className="lp-hero"><div className="lp-hero-t">
-                <span className="lp-eyebrow">A second pair of eyes for the bench</span>
+                <span className="lp-eyebrow">A second pair of eyes for the bench</span><span className="lp-meta">Powered by Meta</span>
                 <h1>{ABOUT.headline}</h1>
                 <p>{ABOUT.sub}</p>
                 {!user && <div className="lp-cta"><button className="as-btn big lp-primary" onClick={() => onGo('signup')}>Get started</button><button className="lp-ghost" onClick={() => onGo('login')}>Sign in</button></div>}
@@ -37,7 +37,7 @@ function Landing({ onGo, onApp, user }: { onGo: (m: 'login' | 'signup') => void;
         <section className="lp-sec"><h2>You stay in charge</h2>
             <div className="lp-pr">{ABOUT.principles.map(h => <div className="lp-prin" key={h.t}><h3>{h.t}</h3><p>{h.d}</p></div>)}</div></section>
         <section className="lp-band"><span className="lp-eyebrow">Our mission</span><p>{ABOUT.mission}</p></section>
-        <footer className="lp-foot"><b>{ABOUT.by}</b><p className="acct-hint">{ABOUT.limits}</p></footer>
+        <footer className="lp-foot"><b>{ABOUT.by}</b><p><a href="mailto:labspotter@proton.me" style={{ color: '#174eb6', fontWeight: 600 }}>Contact support: labspotter@proton.me</a></p><p className="acct-hint">{ABOUT.limits}</p></footer>
     </div>;
 }
 
