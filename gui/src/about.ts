@@ -7,7 +7,7 @@ export const ABOUT = {
     sub: 'Follow a written guide, add a short clip for a suggestion of what it shows, and pause without losing your notes.',
     principles: [
         { t: 'Only your tap counts', d: 'The app suggests. A step is marked done only when you tap it yourself.' },
-        { t: 'Saved, not guessed', d: 'Pause keeps your notes and confirmations. It never claims to know what the bench looks like now.' },
+        { t: 'Pick up where you left off.', d: 'Pause keeps your notes and confirmations. It never claims to know what the bench looks like now.' },
         { t: 'Plain and quick', d: 'One guide, one clip, one tap. Made to be used quickly, mid-task.' },
     ],
     how: [
